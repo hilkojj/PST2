@@ -1,0 +1,26 @@
+config:
+  namespace: Game
+
+AudioSettings @not_a_component @json_with_keys:
+  masterVolume: [ float, 4. ]
+
+GraphicsSettings @not_a_component @json_with_keys:
+  maxArmatureBones: [uint, 64]
+  debugArmatures: [bool, false]
+
+KeyInputSettings @not_a_component @json_with_keys:
+  retryLevel: [KeyInput::Key, GLFW_KEY_R]
+  flyCamera: [KeyInput::Key, GLFW_KEY_F]
+  stopFlyingCamera: [KeyInput::Key, GLFW_KEY_ESCAPE]
+
+GamepadInputSettings @not_a_component @json_with_keys:
+  test: [GamepadInput::Button, GLFW_GAMEPAD_BUTTON_B]
+
+Settings @not_a_component @json_with_keys:
+  graphics: GraphicsSettings
+  audio: AudioSettings
+  keyInput: KeyInputSettings
+  gamepadInput: GamepadInputSettings
+  customSettings: [ json, json::object() ]
+  limitUpdatesPerSec: [ bool, false ]
+  showDeveloperOptions: [ bool, false ]
