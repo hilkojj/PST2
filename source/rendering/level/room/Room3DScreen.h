@@ -10,6 +10,7 @@
 #include <graphics/frame_buffer.h>
 #include <graphics/cube_map.h>
 #include "../../../level/room/Room3D.h"
+#include "EntityInspector3D.h"
 
 struct RenderModel;
 struct Rigged;
@@ -25,7 +26,6 @@ class Room3DScreen : public Screen
         bool
             lights = true,
             uploadLightData = true,
-            shadows = true,
             materials = true,
             riggedModels = true,
             customShaders = true;
@@ -33,14 +33,15 @@ class Room3DScreen : public Screen
         CubeMap *skyBox = NULL;
     };
 
+    EntityInspector3D inspector;
+    GizmoRenderer gizmoRenderer;
+
     DebugLineRenderer lineRenderer;
 
     ShaderAsset
         defaultShader, riggedShader, skyShader;
 
     int prevNrOfPointLights = -1, prevNrOfDirLights = -1, prevNrOfDirShadowLights = -1;
-
-    FrameBuffer *fbo = NULL;
 
     Texture dummyTexture;
 

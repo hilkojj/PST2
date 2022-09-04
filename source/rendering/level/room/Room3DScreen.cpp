@@ -21,6 +21,7 @@ const GLubyte dummyTexData[] = {0, 0, 0};
 Room3DScreen::Room3DScreen(Room3D *room)
         :
         room(room),
+        inspector(*room, "Room3D"),
 
         defaultShader(
             "default shader",
@@ -39,12 +40,12 @@ Room3DScreen::Room3DScreen(Room3D *room)
 {
     assert(room != NULL);
 
-    //inspector.createEntity_showSubFolder = "level_room";
+    inspector.createEntity_showSubFolder = "3d_models";
 }
 
 void Room3DScreen::render(double deltaTime)
 {
-    gu::profiler::Zone z("Room");
+    gu::profiler::Zone z("Room3D");
 
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
@@ -66,25 +67,15 @@ void Room3DScreen::render(double deltaTime)
         if (auto *cp = room->entities.try_get<CameraPerspective>(room->cameraEntity))
             finalImg.mask = cp->visibilityMask;
 
-    assert(fbo != NULL);
-
-    fbo->bind();
     glClearColor(0, 0, 0, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     renderRoom(finalImg);
-    fbo->unbind();
 
     renderDebugStuff(deltaTime);
 }
 
 void Room3DScreen::onResize()
 {
-    // using GL_RGBA16F, because without the alpha channel webgl will give errors.
-
-    delete fbo;
-    fbo = new FrameBuffer(gu::widthPixels, gu::heightPixels);
-    fbo->addColorTexture(GL_RGBA16F, GL_RGBA, GL_NEAREST, GL_NEAREST, GL_FLOAT);  // normal HDR color
-    fbo->addDepthBuffer(GL_DEPTH24_STENCIL8);   // GL_DEPTH24_STENCIL8 is the same format as the default depth buffer. This is necessary for blitting to the default buffer.
 }
 
 int debugTextI = 0;
@@ -103,8 +94,6 @@ void Room3DScreen::renderDebugStuff(double deltaTime)
 
     static bool debugBRDFLUT = false;
 
-    fbo->blitTo(GL_DEPTH_BUFFER_BIT);   // the debug lines will be depth-tested with the depth of the rendered scene
-
     {
         // x-axis:
         lineRenderer.line(vec3(cam.position.x - 1000, 0, 0), vec3(cam.position.x + 1000, 0, 0), mu::X);
@@ -117,9 +106,13 @@ void Room3DScreen::renderDebugStuff(double deltaTime)
     if (Game::settings.graphics.debugArmatures)
         debugArmatures();
 
+    gizmoRenderer.beginFrame(deltaTime, vec2(gu::width, gu::height), cam);
+    inspector.drawGUI(&cam, lineRenderer, gizmoRenderer);
+    gizmoRenderer.endFrame(cam);
+
     ImGui::BeginMainMenuBar();
 
-    if (ImGui::BeginMenu("Room"))
+    if (ImGui::BeginMenu("Room3D"))
     {
         ImGui::Separator();
 
@@ -151,7 +144,6 @@ void Room3DScreen::renderDebugStuff(double deltaTime)
 
 Room3DScreen::~Room3DScreen()
 {
-    delete fbo;
 }
 
 inline void prepareMeshVertBuffer(const SharedMesh &mesh)
@@ -267,10 +259,7 @@ void Room3DScreen::renderRoom(const RenderContext &con)
 const int
     DIFFUSE_TEX_UNIT = 0,
     MET_ROUG_TEX_UNIT = 1,
-    NORMAL_TEX_UNIT = 2,
-
-    FIRST_SHADOW_MAP_TEX_UNIT = 6;
-    // NOTE: shadow maps might also use 7, 8, and 9
+    NORMAL_TEX_UNIT = 2;
 
 const char
     *DIFFUSE_UNI_NAME = "diffuseTexture",
@@ -305,9 +294,6 @@ void Room3DScreen::prepareMaterial(entt::entity e, const RenderContext &con, con
         modelPart.material->normalMap.get().bind(NORMAL_TEX_UNIT, shader, NORMAL_UNI_NAME);
     else
         dummyTexture.bind(NORMAL_TEX_UNIT, shader, NORMAL_UNI_NAME);
-
-    if (con.shadows)
-        glUniform1i(shader.location("useShadows"), room->entities.has<ShadowReceiver>(e));
 }
 
 void Room3DScreen::renderModel(const RenderContext &con, ShaderProgram &shader, entt::entity e, const Transform &t, const RenderModel &rm, const Rigged *rig)
@@ -364,20 +350,12 @@ void Room3DScreen::initializeShader(const RenderContext &con, ShaderProgram &sha
             prevNrOfPointLights = nrOfPointLights;
         }
 
-        auto dlView = room->entities.view<Transform, DirectionalLight>(entt::exclude<ShadowRenderer>);
+        auto dlView = room->entities.view<Transform, DirectionalLight>();
         int nrOfDirLights = dlView.size();
         if (nrOfDirLights != prevNrOfDirLights)
         {
             ShaderDefinitions::global().defineInt("NR_OF_DIR_LIGHTS", nrOfDirLights);
             prevNrOfDirLights = nrOfDirLights;
-        }
-
-        auto dShadowLView = room->entities.view<Transform, DirectionalLight, ShadowRenderer>();
-        int nrOfDirShadowLights = dShadowLView.size();
-        if (nrOfDirShadowLights != prevNrOfDirShadowLights)
-        {
-            ShaderDefinitions::global().defineInt("NR_OF_DIR_SHADOW_LIGHTS", nrOfDirShadowLights);
-            prevNrOfDirShadowLights = nrOfDirShadowLights;
         }
 
         shader.use();
@@ -402,23 +380,6 @@ void Room3DScreen::initializeShader(const RenderContext &con, ShaderProgram &sha
 
             glUniform3fv(shader.location((arrEl + ".direction").c_str()), 1, &direction[0]);
             glUniform3fv(shader.location((arrEl + ".color").c_str()), 1, &dl.color[0]);
-        });
-
-        int dirShadowLightI = 0;
-        dShadowLView.each([&](auto e, Transform &t, DirectionalLight &dl, ShadowRenderer &sr) {
-
-            std::string arrEl = "dirShadowLights[" + std::to_string(dirShadowLightI) + "]";
-
-            auto transform = Room3D::transformFromComponent(t);
-            vec3 direction = transform * vec4(-mu::Y, 0);
-
-            glUniform3fv(shader.location((arrEl + ".light.direction").c_str()), 1, &direction[0]);
-            glUniform3fv(shader.location((arrEl + ".light.color").c_str()), 1, &dl.color[0]);
-
-            assert(sr.fbo != NULL && sr.fbo->depthTexture != NULL);
-            sr.fbo->depthTexture->bind(FIRST_SHADOW_MAP_TEX_UNIT + dirShadowLightI, shader, ("dirShadowMaps[" + std::to_string(dirShadowLightI) + "]").c_str());
-            glUniformMatrix4fv(shader.location((arrEl + ".shadowSpace").c_str()), 1, GL_FALSE, &sr.shadowSpace[0][0]);
-            dirShadowLightI++;
         });
     }
     else shader.use();

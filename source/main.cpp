@@ -83,6 +83,7 @@ int main(int argc, char *argv[])
     colors[ImGuiCol_TabActive]              = ImVec4(0.59f, 0.68f, 0.85f, 1.00f);
     ImGui::GetStyle().WindowTitleAlign = ImVec2(0.5f, 0.5f);
     ImGui::GetStyle().WindowMenuButtonPosition = ImGuiDir_Left;
+    ImGui::GetStyle().FrameRounding = 0.0f;
 
     File::createDir("./saves"); // todo, see dibidab trello
     gu::setScreen(new GameScreen);

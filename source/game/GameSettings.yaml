@@ -14,6 +14,13 @@ KeyInputSettings @not_a_component @json_with_keys:
   flyCamera: [KeyInput::Key, GLFW_KEY_F]
   stopFlyingCamera: [KeyInput::Key, GLFW_KEY_ESCAPE]
 
+  moveEntity: [ KeyInput::Key, GLFW_KEY_G ]
+  gizmoNeedCtrl: [ bool, true ]
+  gizmoToggleLocal: [ KeyInput::Key, GLFW_KEY_L ]
+  gizmoTranslate: [ KeyInput::Key, GLFW_KEY_T ]
+  gizmoRotate: [ KeyInput::Key, GLFW_KEY_Q ]
+  gizmoScale: [ KeyInput::Key, GLFW_KEY_S ]
+
 GamepadInputSettings @not_a_component @json_with_keys:
   test: [GamepadInput::Button, GLFW_GAMEPAD_BUTTON_B]
 

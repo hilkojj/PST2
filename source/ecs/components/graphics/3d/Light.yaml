@@ -13,25 +13,5 @@ PointLight:
 
   color: [vec3, vec3(1)]
 
-SpotLight:
-  todo
-
 DirectionalLight:
   color: [vec3, vec3(1)]
-
-ShadowRenderer:
-  visibilityMask: [uint, 1]
-  resolution: [ivec2, ivec2(1024)]
-  frustrumSize: [vec2, vec2(20)]
-  nearClipPlane: [ float, .1 ]
-  farClipPlane: [ float, 1000 ]
-
-  _cpp_only:
-    fbo: std::shared_ptr<FrameBuffer>
-    shadowSpace: mat4
-
-ShadowCaster:
-  f
-
-ShadowReceiver:
-  f

@@ -1,5 +1,6 @@
 
 #include <graphics/3d/perspective_camera.h>
+#include <graphics/orthographic_camera.h>
 #include <utils/camera/flying_camera_controller.h>
 #include <utils/gltf_model_loader.h>
 #include <graphics/3d/tangent_calculator.h>
@@ -13,7 +14,7 @@
 
 Room3D::Room3D()
 {
-    templateFolder = "scripts/entities/level_room/";
+    templateFolder = "scripts/entities/3d_models/";
 
     loadedMeshAttributes
         .add_(VertAttributes::POSITION)
@@ -156,14 +157,30 @@ Camera *Room3D::cameraFromEntity(entt::entity e) const
         return NULL;
 
     auto *pers = entities.try_get<CameraPerspective>(e);
+    auto *ortho = entities.try_get<CameraOrthographic>(e);
     auto *trans = entities.try_get<Transform>(e);
 
-    if (pers && trans)
+    if (!trans)
+        return NULL;
+
+    mat4 transform = transformFromComponent(*trans);
+
+    if (pers)
     {
         auto cam = new PerspectiveCamera(pers->nearClipPlane, pers->farClipPlane, gu::width, gu::height, pers->fieldOfView);
         cam->position = trans->position;
 
-        mat4 transform = transformFromComponent(*trans);
+        cam->up = transform * vec4(cam->up, 0);
+        cam->direction = transform * vec4(cam->direction, 0);
+        cam->right = transform * vec4(cam->right, 0);
+        cam->update();
+        return cam;
+    }
+    if (ortho)
+    {
+        auto cam = new OrthographicCamera(ortho->nearClipPlane, ortho->farClipPlane, gu::width, gu::height);
+        cam->position = trans->position;
+
         cam->up = transform * vec4(cam->up, 0);
         cam->direction = transform * vec4(cam->direction, 0);
         cam->right = transform * vec4(cam->right, 0);
@@ -230,8 +247,8 @@ void Room3D::updateOrCreateCamera(double deltaTime)
 
         if (!camera)
         {
-            camera = new PerspectiveCamera(.1, 1000, 1, 1, 75);
-            camera->position = vec3(10);
+            camera = new OrthographicCamera(.1, 1000, 1, 1);
+            camera->position = vec3(100);
             camera->lookAt(mu::ZERO_3);
             camera->viewportWidth = gu::width;
             camera->viewportHeight = gu::height;

@@ -1,0 +1,10 @@
+CameraPerspective:
+  fieldOfView: [float, 75]
+  nearClipPlane: [float, .1]
+  farClipPlane: [float, 1000]
+  visibilityMask: [uint, 1]
+
+CameraOrthographic:
+  nearClipPlane: [float, .1]
+  farClipPlane: [float, 1000]
+  visibilityMask: [uint, 1]
