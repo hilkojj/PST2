@@ -64,7 +64,7 @@ void LevelScreen::showRoom(Room3D *r)
     roomScreen = NULL;
     if (r)
     {
-        roomScreen = new RoomScreen(r);
+        roomScreen = new Room3DScreen(r);
         roomScreen->onResize();
     }
 }

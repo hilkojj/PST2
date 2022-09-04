@@ -72,6 +72,18 @@ int main(int argc, char *argv[])
 
     dibidab::init(argc, argv);
 
+    ImGui::StyleWin98(&ImGui::GetStyle());
+    ImVec4* colors = ImGui::GetStyle().Colors;
+    colors[ImGuiCol_WindowBg]               = ImVec4(0.74f, 0.85f, 0.85f, 1.00f);
+    colors[ImGuiCol_ChildBg]                = ImVec4(0.85f, 0.74f, 0.83f, 1.00f);
+    colors[ImGuiCol_PopupBg]                = ImVec4(0.59f, 0.68f, 0.85f, 1.00f);
+    colors[ImGuiCol_TitleBgActive]          = ImVec4(0.00f, 0.39f, 0.50f, 1.00f);
+    colors[ImGuiCol_Tab]                    = ImVec4(1.00f, 1.00f, 1.00f, 0.95f);
+    colors[ImGuiCol_TabHovered]             = ImVec4(0.37f, 0.52f, 0.72f, 1.00f);
+    colors[ImGuiCol_TabActive]              = ImVec4(0.59f, 0.68f, 0.85f, 1.00f);
+    ImGui::GetStyle().WindowTitleAlign = ImVec2(0.5f, 0.5f);
+    ImGui::GetStyle().WindowMenuButtonPosition = ImGuiDir_Left;
+
     File::createDir("./saves"); // todo, see dibidab trello
     gu::setScreen(new GameScreen);
 

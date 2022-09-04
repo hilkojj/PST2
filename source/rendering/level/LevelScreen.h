@@ -4,14 +4,14 @@
 
 #include <gu/screen.h>
 #include <level/Level.h>
-#include "room/RoomScreen.h"
+#include "room/Room3DScreen.h"
 
 class LevelScreen : public Screen
 {
 
     Level *lvl;
 
-    RoomScreen *roomScreen = NULL;
+    Room3DScreen *roomScreen = NULL;
 
     delegate_method onPlayerEnteredRoom, onRoomDeletion;
 

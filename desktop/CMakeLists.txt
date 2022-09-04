@@ -8,6 +8,20 @@ endif ()
 
 project(game)
 
+# --- switch to Dear ImGUi with win98ish style ---
+find_package(Git)
+execute_process(
+        COMMAND ${GIT_EXECUTABLE} submodule set-url external/imgui https://github.com/hilkojj/imgui-win98.git
+        WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/../external/dibidab-engine/external/gu/
+)
+execute_process(
+        COMMAND ${GIT_EXECUTABLE} submodule update --init external/imgui
+        WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/../external/dibidab-engine/external/gu/
+)
+execute_process(
+        COMMAND ${GIT_EXECUTABLE} pull origin win98
+        WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/../external/dibidab-engine/external/gu/external/imgui/
+)
 
 set(EXECUTABLE_OUTPUT_PATH "out")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)

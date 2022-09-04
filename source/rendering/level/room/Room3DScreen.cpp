@@ -4,7 +4,7 @@
 #include <game/dibidab.h>
 #include <graphics/orthographic_camera.h>
 #include <utils/quad_renderer.h>
-#include "RoomScreen.h"
+#include "Room3DScreen.h"
 #include "../../../generated/Camera.hpp"
 #include "../../../generated/Model.hpp"
 #include "../../../generated/Light.hpp"
@@ -18,7 +18,7 @@ const GLubyte dummyTexData[] = {0, 0, 0};
 
 #define DISPOSE_VERTS_ON_UPLOAD true
 
-RoomScreen::RoomScreen(Room3D *room)
+Room3DScreen::Room3DScreen(Room3D *room)
         :
         room(room),
 
@@ -42,7 +42,7 @@ RoomScreen::RoomScreen(Room3D *room)
     //inspector.createEntity_showSubFolder = "level_room";
 }
 
-void RoomScreen::render(double deltaTime)
+void Room3DScreen::render(double deltaTime)
 {
     gu::profiler::Zone z("Room");
 
@@ -77,7 +77,7 @@ void RoomScreen::render(double deltaTime)
     renderDebugStuff(deltaTime);
 }
 
-void RoomScreen::onResize()
+void Room3DScreen::onResize()
 {
     // using GL_RGBA16F, because without the alpha channel webgl will give errors.
 
@@ -89,7 +89,7 @@ void RoomScreen::onResize()
 
 int debugTextI = 0;
 
-void RoomScreen::renderDebugStuff(double deltaTime)
+void Room3DScreen::renderDebugStuff(double deltaTime)
 {
     if (!dibidab::settings.showDeveloperOptions)
         return;
@@ -149,7 +149,7 @@ void RoomScreen::renderDebugStuff(double deltaTime)
 
 }
 
-RoomScreen::~RoomScreen()
+Room3DScreen::~Room3DScreen()
 {
     delete fbo;
 }
@@ -163,7 +163,7 @@ inline void prepareMeshVertBuffer(const SharedMesh &mesh)
         mesh->vertBuffer->upload(DISPOSE_VERTS_ON_UPLOAD);
 }
 
-void RoomScreen::renderRoom(const RenderContext &con)
+void Room3DScreen::renderRoom(const RenderContext &con)
 {
     gu::profiler::Zone z("render models");
 
@@ -277,7 +277,7 @@ const char
     *MET_ROUG_UNI_NAME = "metallicRoughnessTexture",
     *NORMAL_UNI_NAME = "normalMap";
 
-void RoomScreen::prepareMaterial(entt::entity e, const RenderContext &con, const ModelPart &modelPart, ShaderProgram &shader)
+void Room3DScreen::prepareMaterial(entt::entity e, const RenderContext &con, const ModelPart &modelPart, ShaderProgram &shader)
 {
     bool useDiffuseTexture = modelPart.material->diffuseTexture.isSet();
     glUniform1i(shader.location("useDiffuseTexture"), useDiffuseTexture);
@@ -310,7 +310,7 @@ void RoomScreen::prepareMaterial(entt::entity e, const RenderContext &con, const
         glUniform1i(shader.location("useShadows"), room->entities.has<ShadowReceiver>(e));
 }
 
-void RoomScreen::renderModel(const RenderContext &con, ShaderProgram &shader, entt::entity e, const Transform &t, const RenderModel &rm, const Rigged *rig)
+void Room3DScreen::renderModel(const RenderContext &con, ShaderProgram &shader, entt::entity e, const Transform &t, const RenderModel &rm, const Rigged *rig)
 {
     if (!(rm.visibilityMask & con.mask))
         return;
@@ -352,7 +352,7 @@ void RoomScreen::renderModel(const RenderContext &con, ShaderProgram &shader, en
     }
 }
 
-void RoomScreen::initializeShader(const RenderContext &con, ShaderProgram &shader)
+void Room3DScreen::initializeShader(const RenderContext &con, ShaderProgram &shader)
 {
     if (con.lights && con.uploadLightData && !shader.definitions.isDefined("NO_LIGHTS"))
     {
@@ -427,7 +427,7 @@ void RoomScreen::initializeShader(const RenderContext &con, ShaderProgram &shade
     glUniform1f(shader.location("time"), room->getLevel().getTime());
 }
 
-void RoomScreen::debugLights()
+void Room3DScreen::debugLights()
 {
     gu::profiler::Zone z("lights");
     // directional lights:
@@ -452,7 +452,7 @@ void RoomScreen::debugLights()
     });
 }
 
-void RoomScreen::debugArmatures()
+void Room3DScreen::debugArmatures()
 {
     gu::profiler::Zone z("armatures");
     glDisable(GL_DEPTH_TEST);
@@ -515,7 +515,7 @@ void RoomScreen::debugArmatures()
     glLineWidth(1.f);
 }
 
-void RoomScreen::debugText(const std::string &text, const vec3 &pos)
+void Room3DScreen::debugText(const std::string &text, const vec3 &pos)
 {
     bool inScreen = false;
     assert(room->camera != NULL);

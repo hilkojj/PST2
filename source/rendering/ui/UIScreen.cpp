@@ -8,7 +8,7 @@
 #include "UIScreen.h"
 #include "../../game/Game.h"
 #include "../../ecs/systems/graphics/SpriteSystem.h"
-#include "../level/room/RoomScreen.h"
+#include "../level/room/Room3DScreen.h"
 
 UIScreen::UIScreen(const asset<luau::Script> &s)
     :
@@ -48,6 +48,8 @@ void UIScreen::render(double deltaTime)
     gu::profiler::Zone z("UI");
 
     update(deltaTime); // todo: move this? Update ALL UIScreens? or only the active one?
+
+    ImGui::ShowDemoWindow();
 
     renderDebugStuff();
 

@@ -1,6 +1,6 @@
 
-#ifndef GAME_ROOMSCREEN_H
-#define GAME_ROOMSCREEN_H
+#ifndef GAME_ROOM3DSCREEN_H
+#define GAME_ROOM3DSCREEN_H
 
 #include <gu/screen.h>
 #include <gl_includes.h>
@@ -14,7 +14,7 @@
 struct RenderModel;
 struct Rigged;
 
-class RoomScreen : public Screen
+class Room3DScreen : public Screen
 {
     struct RenderContext
     {
@@ -48,7 +48,7 @@ class RoomScreen : public Screen
       
     Room3D *room;
 
-    RoomScreen(Room3D *room);
+    Room3DScreen(Room3D *room);
 
     void render(double deltaTime) override;
 
@@ -56,7 +56,7 @@ class RoomScreen : public Screen
 
     void renderDebugStuff(double deltaTime);
 
-    ~RoomScreen() override;
+    ~Room3DScreen() override;
 
   private:
 
