@@ -5,9 +5,12 @@ AudioSettings @not_a_component @json_with_keys:
   masterVolume: [ float, 4. ]
 
 GraphicsSettings @not_a_component @json_with_keys:
-  maxArmatureBones: [uint, 64]
+  maxArmatureBones: [uint, 64u]
   debugArmatures: [bool, false]
   imGuiFont: [string, "assets/fonts/pixellari/Pixellari.ttf"]
+  megaSpriteSheetSize: [uint, 2048] # https://feedback.wildfiregames.com/report/opengl/feature/GL_MAX_TEXTURE_SIZE
+  isometricAngle: [float, 30.0f]
+  pixelsPerMeter: [uint, 24u]
 
 KeyInputSettings @not_a_component @json_with_keys:
   retryLevel: [KeyInput::Key, GLFW_KEY_R]

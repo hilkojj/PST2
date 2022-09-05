@@ -24,6 +24,8 @@ class Room3D : public Room
 
     Room3D();
 
+    void initializeWithoutLevel();
+
     void update(double deltaTime) override;
 
     vec3 getPosition(entt::entity) const override;

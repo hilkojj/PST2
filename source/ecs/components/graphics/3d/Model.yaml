@@ -1,7 +1,7 @@
 config:
   hpp_incl:
     - graphics/3d/armature.h
-    - ../level/room/Room3D.h
+    - ../level/room3d/Room3D.h
     - graphics/shader_asset.h
     - set
 
@@ -9,6 +9,14 @@ config:
 RenderModel:
   modelName: std::string
   visibilityMask: [uint, 1]
+
+RenderModelToSpriteSheet:
+  yawSteps: [uint, 8]
+  pitchSteps: [uint, 0]
+  pitchMin: [float, -45.0f]
+  pitchMax: [float, 45.0f]
+  cameraDistance: [float, 100.0f]
+  spriteSize: [uvec2, uvec2(64)]
 
 CustomShader @dirtyable:
   vertexShaderPath: std::string

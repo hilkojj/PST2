@@ -8,9 +8,9 @@
 #include "Room3D.h"
 #include "../../generated/Camera.hpp"
 #include "../../game/Game.h"
-#include "../../ecs/systems/ArmatureAnimationSystem.h"
+#include "../../ecs/systems/graphics/3d/ArmatureAnimationSystem.h"
 #include "../../ecs/systems/PositionedAudioSystem.h"
-#include "../../ecs/systems/graphics/CustomShaderSystem.h"
+#include "../../ecs/systems/graphics/3d/CustomShaderSystem.h"
 
 Room3D::Room3D()
 {
@@ -72,6 +72,11 @@ void Room3D::initializeLuaEnvironment()
     luaEnvironment["getTime"] = [&] {
         return getLevel().getTime();
     };
+}
+
+void Room3D::initializeWithoutLevel()
+{
+    EntityEngine::initialize();
 }
 
 void decomposeMtx(const mat4 &m, vec3 &pos, quat &rot, vec3 &scale)

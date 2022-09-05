@@ -34,7 +34,7 @@ SpriteRenderer::SpriteRenderer()
 
 void SpriteRenderer::add(const AsepriteView &view, const ivec2 &position)
 {
-    ivec2 frameOffset = Game::spriteSheet.spriteInfo(view.sprite.get()).frameOffsets.at(view.frame);
+    ivec2 frameOffset = Game::spriteSheet->spriteInfo(view.sprite.get()).frameOffsets.at(view.frame);
 
     vec2 size(view.sprite->width, view.sprite->height);
     if (view.flipHorizontal)
@@ -77,7 +77,7 @@ void SpriteRenderer::render(const Camera &cam)
 
     shader.use();
     glUniformMatrix4fv(shader.location("projection"), 1, GL_FALSE, &cam.combined[0][0]);
-    Game::spriteSheet.texture->bind(0, shader, "spriteSheet");
+    Game::spriteSheet->fbo->colorTexture->bind(0, shader, "spriteSheet");
 
     quad->renderInstances(instancedData.nrOfVertices());
     instancedData.vertices.clear();

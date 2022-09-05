@@ -5,8 +5,8 @@
 #include <ecs/systems/EntitySystem.h>
 #include <map>
 #include <set>
-#include "../../../level/room/Room3D.h"
-#include "../../../generated/Model.hpp"
+#include "../../../../level/room3d/Room3D.h"
+#include "../../../../generated/Model.hpp"
 
 class CustomShaderSystem : public EntitySystem
 {

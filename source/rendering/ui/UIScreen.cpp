@@ -8,7 +8,7 @@
 #include "UIScreen.h"
 #include "../../game/Game.h"
 #include "../../ecs/systems/graphics/SpriteSystem.h"
-#include "../level/room/Room3DScreen.h"
+#include "../level/room3d/Room3DScreen.h"
 
 UIScreen::UIScreen(const asset<luau::Script> &s)
     :

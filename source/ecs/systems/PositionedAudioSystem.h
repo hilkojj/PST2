@@ -3,7 +3,7 @@
 #define POSITIONEDAUDIO_SYSTEM_H
 
 #include <ecs/systems/EntitySystem.h>
-#include "../../level/room/Room3D.h"
+#include "../../level/room3d/Room3D.h"
 
 class PositionedAudioSystem : public EntitySystem
 {

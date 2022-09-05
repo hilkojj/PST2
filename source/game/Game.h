@@ -16,7 +16,7 @@ namespace Game {
 
     void saveSettings();
 
-    extern MegaSpriteSheet spriteSheet;
+    extern cofu<MegaSpriteSheet> spriteSheet;
 
     extern cofu<UIScreenManager> uiScreenManager;
 

@@ -33,7 +33,7 @@ void addAssetLoaders()
 
         auto sprite = new aseprite::Sprite;
         aseprite::Loader(path.c_str(), *sprite);
-        Game::spriteSheet.add(*sprite);
+        Game::spriteSheet->add(*sprite);
         return sprite;
     });
 }
@@ -89,10 +89,6 @@ int main(int argc, char *argv[])
     gu::setScreen(new GameScreen);
 
     initLuaStuff();
-
-    Game::uiScreenManager->openScreen(asset<luau::Script>("scripts/ui_screens/StartupScreen"));
-
-    Game::spriteSheet.printUsage();
 
     dibidab::run();
 

@@ -3,8 +3,10 @@
 #define GAME_MEGASPRITESHEET_H
 
 #include <utils/aseprite/Aseprite.h>
-#include <graphics/texture.h>
+#include <graphics/frame_buffer.h>
 #include <map>
+
+#include "ModelSprite.h"
 
 /**
  * a huge texture containing all sprites of the game
@@ -18,27 +20,36 @@ class MegaSpriteSheet
         std::vector<ivec2> frameOffsets;
     };
 
-    SharedTexture texture;
+    FrameBuffer *fbo = nullptr;
 
-    static constexpr int SIZE = 512;
+    const static uint CHUNK_SIZE = 8u;
+    const uint size;
+
+    MegaSpriteSheet();
 
     void add(const aseprite::Sprite &);
 
+    ModelSprite::Orientation::Frame &addFrame(const std::string &modelSpriteName, SharedModelSprite &modelSprite, const std::string &animationName, float yaw, float pitch);
+
     const SubSheet &spriteInfo(const aseprite::Sprite &) const;
+
+    SharedModelSprite getModelSpriteByName(const std::string &) const;
+
+    float getUsage() const;
 
     void printUsage() const;
 
   private:
 
-    const static int CHUNK_SIZE = 8, CHUNKS_PER_ROW = SIZE / CHUNK_SIZE;
-
-    bool used[CHUNKS_PER_ROW][CHUNKS_PER_ROW] = {};
+    std::vector<bool> used;
 
     std::map<const aseprite::Sprite *, SubSheet> subSheets;
 
-    bool tryReserve(const ivec2 &chunkOffset, const ivec2 &chunkSize);
+    std::map<std::string, SharedModelSprite> modelSprites;
 
-    void createTexture();
+    const uint getChunksPerRow() const;
+
+    bool tryReserve(const ivec2 &chunkOffset, const ivec2 &chunkSize);
 
 };
 

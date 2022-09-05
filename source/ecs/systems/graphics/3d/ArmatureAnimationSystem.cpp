@@ -1,7 +1,7 @@
 
 #include "ArmatureAnimationSystem.h"
-#include "../../level/room/Room3D.h"
-#include "../../generated/Model.hpp"
+#include "../../../../level/room3d/Room3D.h"
+#include "../../../../generated/Model.hpp"
 #include <utils/math/interpolation.h>
 
 SharedArmature getArmatureOfModel(SharedModel &model)

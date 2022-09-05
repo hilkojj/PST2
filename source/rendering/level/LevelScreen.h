@@ -4,7 +4,7 @@
 
 #include <gu/screen.h>
 #include <level/Level.h>
-#include "room/Room3DScreen.h"
+#include "room3d/Room3DScreen.h"
 
 class LevelScreen : public Screen
 {

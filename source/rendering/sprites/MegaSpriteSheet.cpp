@@ -1,75 +1,32 @@
 
 #include <utils/gu_error.h>
 #include "MegaSpriteSheet.h"
+#include "../../game/Game.h"
+
+MegaSpriteSheet::MegaSpriteSheet() : size(Game::settings.graphics.megaSpriteSheetSize)
+{
+    used.resize(getChunksPerRow() * getChunksPerRow());
+    fbo = new FrameBuffer(size, size);
+    fbo->addColorTexture(GL_RGB4, GL_RGB, GL_NEAREST, GL_NEAREST, GL_UNSIGNED_BYTE);
+    fbo->addDepthBuffer();
+}
 
 void MegaSpriteSheet::add(const aseprite::Sprite &sprite)
 {
-    if (!texture)
-        createTexture();
-    texture->bind(0);
-
-    ivec2 chunkSize(
-        ceil(vec2(sprite.width, sprite.height) / float(CHUNK_SIZE))
-    );
-
-    SubSheet subSheet;
-
-    for (auto &frame : sprite.frames)
-    {
-        ivec2 chunkOffset(0);
-        bool foundPlace = false;
-
-        for (chunkOffset.x = 0; chunkOffset.x <= CHUNKS_PER_ROW - chunkSize.x; chunkOffset.x++)
-        {
-            for (chunkOffset.y = 0; chunkOffset.y <= CHUNKS_PER_ROW - chunkSize.y; chunkOffset.y++)
-            {
-                if (tryReserve(chunkOffset, chunkSize))
-                {
-                    foundPlace = true;
-                    break;
-                }
-            }
-            if (foundPlace)
-                break;
-        }
-        if (!foundPlace)
-            throw gu_err("MegaSpriteSheet is too small....");
-
-        glTexSubImage2D(
-                GL_TEXTURE_2D, 0, chunkOffset.x * CHUNK_SIZE, chunkOffset.y * CHUNK_SIZE, sprite.width, sprite.height,
-                GL_RED_INTEGER, GL_UNSIGNED_BYTE, &frame.pixels[0]
-        );
-        subSheet.frameOffsets.push_back(chunkOffset * CHUNK_SIZE);
-    }
-    subSheets[&sprite] = subSheet;
+    // todo, reimplement.
 }
 
 bool MegaSpriteSheet::tryReserve(const ivec2 &chunkOffset, const ivec2 &chunkSize)
 {
     for (int x = chunkOffset.x; x < chunkOffset.x + chunkSize.x; x++)
         for (int y = chunkOffset.y; y <= chunkOffset.y + chunkSize.y; y++)
-            if (used[x][y])
+            if (used[x + y * getChunksPerRow()])
                 return false;
     for (int x = chunkOffset.x; x < chunkOffset.x + chunkSize.x; x++)
         for (int y = chunkOffset.y; y <= chunkOffset.y + chunkSize.y; y++)
-            used[x][y] = true;
+            used[x + y * getChunksPerRow()] = true;
 
     return true;
-}
-
-void MegaSpriteSheet::createTexture()
-{
-    GLuint textureID;
-    glGenTextures(1, &textureID);
-
-    glBindTexture(GL_TEXTURE_2D, textureID);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_R8UI, SIZE, SIZE, 0, GL_RED_INTEGER, GL_UNSIGNED_BYTE, NULL);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-    texture = std::make_shared<Texture>(textureID, SIZE, SIZE);
 }
 
 const MegaSpriteSheet::SubSheet &MegaSpriteSheet::spriteInfo(const aseprite::Sprite &s) const
@@ -77,13 +34,59 @@ const MegaSpriteSheet::SubSheet &MegaSpriteSheet::spriteInfo(const aseprite::Spr
     return subSheets.at(&s);
 }
 
-void MegaSpriteSheet::printUsage() const
+float MegaSpriteSheet::getUsage() const
 {
     float usedChunks = 0;
-    for (int x = 0; x < CHUNKS_PER_ROW; x++)
-        for (int y = 0; y < CHUNKS_PER_ROW; y++)
-            if (used[x][y])
-                usedChunks++;
-    int usage = round(100.f * usedChunks / float(CHUNKS_PER_ROW * CHUNKS_PER_ROW));
+    for (auto u : used)
+        if (u)
+            usedChunks += 1.0f;
+    return usedChunks / float(used.size());
+}
+
+void MegaSpriteSheet::printUsage() const
+{
+    int usage = round(100.f * getUsage());
     std::cout << usage << "% used of MegaSpriteSheet\n";
 }
+
+SharedModelSprite MegaSpriteSheet::getModelSpriteByName(const std::string &name) const
+{
+    auto it = modelSprites.find(name);
+    if (it == modelSprites.end())
+    {
+        throw gu_err("Model sprite named " + name + " not found!");
+    }
+    return it->second;
+}
+
+ModelSprite::Orientation::Frame &MegaSpriteSheet::addFrame(const std::string &modelSpriteName, SharedModelSprite &modelSprite,
+                               const std::string &animationName, float yaw, float pitch)
+{
+    modelSprites[modelSpriteName] = modelSprite;
+
+    auto &frame = modelSprite->getClosestOrientation(yaw, pitch).animations[animationName].emplace_back();
+
+    uvec2
+        chunkOffset(0u, 0u),
+        chunkSize(ceil(vec2(modelSprite->renderProperties.spriteSize * Game::settings.graphics.pixelsPerMeter) / float(CHUNK_SIZE)));
+
+    for (chunkOffset.y = 0u; chunkOffset.y < getChunksPerRow() - chunkSize.y; chunkOffset.y++)
+    {
+        for (chunkOffset.x = 0u; chunkOffset.x < getChunksPerRow() - chunkSize.x; chunkOffset.x++)
+        {
+            if (tryReserve(chunkOffset, chunkSize))
+            {
+                frame.spriteSheetOffset = chunkOffset * CHUNK_SIZE;
+                return frame;
+            }
+        }
+    }
+    throw gu_err("MegaSpriteSheet is full! Try increasing it's size in settings.json!");
+    return frame;
+}
+
+const uint MegaSpriteSheet::getChunksPerRow() const
+{
+    return size / CHUNK_SIZE;
+}
+
