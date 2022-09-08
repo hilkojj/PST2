@@ -4,6 +4,8 @@
 
 #include <utils/math_utils.h>
 
+#include <vector>
+
 enum class IsoTileShape : unsigned char
 {
     empty,

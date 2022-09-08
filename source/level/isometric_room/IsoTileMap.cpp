@@ -44,7 +44,7 @@ uint IsoTileMap::getTileVectorIndex(uint x, uint y, uint z) const
 
 void IsoTileMap::toBinary(std::vector<char> &out) const
 {
-    const ulong tilesOffset = out.size();
+    const auto tilesOffset = out.size();
     assert(tiles.size() == size.x * size.y * size.z);
     out.resize(tilesOffset + tiles.size() * sizeof(IsoTile));
     memcpy(&out[tilesOffset], tiles.data(), tiles.size() * sizeof(IsoTile));
@@ -52,7 +52,7 @@ void IsoTileMap::toBinary(std::vector<char> &out) const
 
 void IsoTileMap::fromBinary(const char *data, int size)
 {
-    const ulong numBytesToCopy = tiles.size() * sizeof(IsoTile);
+    const auto numBytesToCopy = tiles.size() * sizeof(IsoTile);
     if (numBytesToCopy != size)
     {
         throw gu_err("Trying to load a IsoTileMap with invalid size!");
