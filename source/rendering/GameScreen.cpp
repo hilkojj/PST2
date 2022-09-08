@@ -27,6 +27,9 @@ double waitAfterLoading = 0.0f;
 
 void GameScreen::render(double deltaTime)
 {
+    glClearColor(0.2f, 0.4f, 1.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     if (!Game::uiScreenManager->noScreens())
     {
         if (lvlScreen)
@@ -35,9 +38,7 @@ void GameScreen::render(double deltaTime)
     }
     else
     {
-        glClearColor(0.2f, 0.4f, 1.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+        // Generate the game's sprites and then move on to the first UI screen.
         QuadRenderer::render(Game::spriteSheet->fbo->colorTexture);
 
         if (!loadedSprites)
@@ -69,14 +70,12 @@ void GameScreen::render(double deltaTime)
                         loadedSprites = true;
                         delete spritesGenerator;
                         spritesGenerator = nullptr;
-                        //Game::uiScreenManager->openScreen(asset<luau::Script>("scripts/ui_screens/StartupScreen"));
+                        Game::uiScreenManager->openScreen(asset<luau::Script>("scripts/ui_screens/StartupScreen"));
                     }
                 }
             }
             ImGui::End();
         }
-
-        ImGui::ShowDemoWindow();
     }
 
     ImGui::BeginMainMenuBar();

@@ -4,11 +4,155 @@
 #include <utils/quad_renderer.h>
 #include <ecs/systems/AudioSystem.h>
 #include <ecs/systems/LuaScriptsSystem.h>
-#include <generated/Children.hpp>
+#include <game/dibidab.h>
+#include <game/session/SingleplayerSession.h>
 #include "UIScreen.h"
 #include "../../game/Game.h"
+#include "../../level/isometric_room/IsoRoom.h"
 #include "../../ecs/systems/graphics/SpriteSystem.h"
-#include "../level/room3d/Room3DScreen.h"
+
+#define LVL_EXTENSION ".pst2"
+
+namespace UIScreenWidgets
+{
+    bool justResized = false;
+    bool showAbout = false;
+
+    void loadLevel(Level *lvl)
+    {
+        auto &session = dibidab::getCurrentSession();
+        auto singleplayerSession = dynamic_cast<SingleplayerSession *>(&session);
+        if (singleplayerSession)
+        {
+            singleplayerSession->setLevel(lvl);
+            Game::uiScreenManager->closeActiveScreen();
+            // TODO: either completely remove scripts for UI screens, or add ImGUI bindings to lua.
+            Game::uiScreenManager->openScreen(asset<luau::Script>("scripts/ui_screens/LevelScreen"));
+        }
+        else delete lvl;
+    }
+
+    void showMainMenuWindow()
+    {
+        static bool showNewScenario = false;
+
+        ImGui::SetNextWindowPos(ImVec2(gu::widthPixels * 0.5f, gu::heightPixels * 0.5f), justResized ? ImGuiCond_Always : ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+        ImGui::SetNextWindowSize(ImVec2(400.0f, -1.0f), ImGuiCond_Appearing);
+        if (ImGui::Begin("Parking Simulator Tycoon II"))
+        {
+            if (ImGui::Button("New scenario"))
+            {
+                showNewScenario = true;
+            }
+            ImGui::SameLine(0.0f, 16.0f);
+
+            static std::vector<std::string> lvlPaths;
+
+            if (ImGui::Button("Load scenario"))
+            {
+                ImGui::OpenPopup("load_lvl_file");
+                lvlPaths.clear();
+                File::iterateDirectoryRecursively("saves/", [](auto path, auto isDir) {
+                    if (!isDir && stringEndsWith(path, LVL_EXTENSION))
+                    {
+                        lvlPaths.push_back(path);
+                    }
+                });
+            }
+            if (ImGui::BeginPopup("load_lvl_file"))
+            {
+                if (lvlPaths.empty())
+                {
+                    ImGui::TextDisabled("No saved scenarios found.");
+                }
+
+                for (auto &path : lvlPaths)
+                {
+                    if (ImGui::Selectable(path.c_str()))
+                    {
+                        loadLevel(new Level(path.c_str()));
+                    }
+                }
+                ImGui::EndPopup();
+            }
+
+            /*
+            TODO:
+            ImGui::SameLine(0.0f, 16.0f);
+            if (ImGui::Button("About"))
+            {
+                showAbout = true;
+            }
+             */
+            ImGui::SameLine(0.0f, 16.0f);
+            if (ImGui::Button("Exit game"))
+            {
+                gu::setShouldClose(true);
+            }
+        }
+        ImGui::End();
+
+        if (showNewScenario)
+        {
+            ImGui::SetNextWindowSize(ImVec2(250.0f, -1.0f), ImGuiCond_Appearing);
+            if (ImGui::Begin("Create new scenario", &showNewScenario))
+            {
+                static char lvlName[64] = "";
+                ImGui::InputTextWithHint("", "Level file name", lvlName, IM_ARRAYSIZE(lvlName));
+                if (ImGui::Button("Create"))
+                {
+                    std::string lvlNameStr(lvlName);
+                    std::string path = "saves/" + lvlNameStr + LVL_EXTENSION;
+                    if (lvlNameStr.empty())
+                    {
+                        ImGui::OpenPopup("Invalid input");
+                    }
+                    else if (File::exists(path.c_str()))
+                    {
+                        ImGui::OpenPopup("Name already in use");
+                    }
+                    else
+                    {
+                        auto lvl = new Level(path.c_str());
+                        lvl->addRoom(new IsoRoom(uvec3(128)));
+                        lvl->spawnRoom = lvl->getRoom(0).name = "main";
+                        loadLevel(lvl);
+                    }
+                }
+
+                if (ImGui::BeginPopupModal("Invalid input"))
+                {
+                    ImGui::Text("Please enter a valid level file name.");
+                    if (ImGui::Button("OK"))
+                    {
+                        ImGui::CloseCurrentPopup();
+                    }
+                    ImGui::EndPopup();
+                }
+                if (ImGui::BeginPopupModal("Name already in use"))
+                {
+                    ImGui::Text("A level file with this name already exists.");
+                    if (ImGui::Button("OK"))
+                    {
+                        ImGui::CloseCurrentPopup();
+                    }
+                    ImGui::EndPopup();
+                }
+            }
+            ImGui::End();
+        }
+    }
+
+    void showAboutWindow()
+    {
+        if (ImGui::Begin("About", &showAbout))
+        {
+            ImGui::Text("WIP.");
+        }
+        ImGui::End();
+    }
+}
+
 
 UIScreen::UIScreen(const asset<luau::Script> &s)
     :
@@ -49,15 +193,26 @@ void UIScreen::render(double deltaTime)
 
     update(deltaTime); // todo: move this? Update ALL UIScreens? or only the active one?
 
-    ImGui::ShowDemoWindow();
+    //ImGui::ShowDemoWindow();
+
+    if (luaEnvironment["showMainMenu"] == true)
+    {
+        UIScreenWidgets::showMainMenuWindow();
+    }
+    if (UIScreenWidgets::showAbout)
+    {
+        UIScreenWidgets::showAboutWindow();
+    }
 
     renderDebugStuff();
 
     renderingOrUpdating = false;
+    UIScreenWidgets::justResized = false;
 }
 
 void UIScreen::onResize()
 {
+    UIScreenWidgets::justResized = true;
 }
 
 void UIScreen::renderDebugStuff()

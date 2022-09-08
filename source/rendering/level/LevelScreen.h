@@ -5,13 +5,15 @@
 #include <gu/screen.h>
 #include <level/Level.h>
 #include "room3d/Room3DScreen.h"
+#include "isometric_room/IsoRoomScreen.h"
 
 class LevelScreen : public Screen
 {
 
     Level *lvl;
 
-    Room3DScreen *roomScreen = NULL;
+    Room3DScreen *room3DScreen = NULL;
+    IsoRoomScreen *isoRoomScreen = NULL;
 
     delegate_method onPlayerEnteredRoom, onRoomDeletion;
 
@@ -23,7 +25,7 @@ class LevelScreen : public Screen
 
     void onResize() override;
 
-    void showRoom(Room3D *);
+    void showRoom(Room *);
 
   private:
 

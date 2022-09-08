@@ -27,14 +27,16 @@ float IsometricSpritesGenerator::generate()
     {
         return 1.0;
     }
-    currentlyLoading = entitiesToRender.back();
+
+    auto toLoad = entitiesToRender.back();
     entitiesToRender.pop_back();
 
-    entt::entity entityToRender = room3D.getTemplate(currentlyLoading).create();
+    entt::entity entityToRender = room3D.getTemplate(toLoad).create();
     room3D.update(0.0);
 
     if (auto renderToSpriteSheet = room3D.entities.try_get<RenderModelToSpriteSheet>(entityToRender))
     {
+        currentlyLoading = toLoad;
         auto modelSprite = std::make_shared<ModelSprite>(*renderToSpriteSheet);
 
         OrthographicCamera cam(

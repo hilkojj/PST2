@@ -183,7 +183,9 @@ Camera *Room3D::cameraFromEntity(entt::entity e) const
     }
     if (ortho)
     {
-        auto cam = new OrthographicCamera(ortho->nearClipPlane, ortho->farClipPlane, gu::width, gu::height);
+        auto cam = new OrthographicCamera(
+            ortho->nearClipPlane, ortho->farClipPlane, gu::widthPixels / Game::settings.graphics.pixelsPerMeter, gu::heightPixels / Game::settings.graphics.pixelsPerMeter
+        );
         cam->position = trans->position;
 
         cam->up = transform * vec4(cam->up, 0);
@@ -255,8 +257,8 @@ void Room3D::updateOrCreateCamera(double deltaTime)
             camera = new OrthographicCamera(.1, 1000, 1, 1);
             camera->position = vec3(100);
             camera->lookAt(mu::ZERO_3);
-            camera->viewportWidth = gu::width;
-            camera->viewportHeight = gu::height;
+            camera->viewportWidth = gu::widthPixels / Game::settings.graphics.pixelsPerMeter;
+            camera->viewportHeight = gu::heightPixels / Game::settings.graphics.pixelsPerMeter;
             camera->update();
         }
     }

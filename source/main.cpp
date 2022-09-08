@@ -3,6 +3,7 @@
 #include <utils/aseprite/AsepriteLoader.h>
 
 #include "game/Game.h"
+#include "level/isometric_room/IsoRoom.h"
 #include "rendering/GameScreen.h"
 
 
@@ -65,7 +66,7 @@ int main(int argc, char *argv[])
     Game::loadSettings();
 
     Level::customRoomLoader = [] (const json &j) {
-        auto *room = new Room3D;
+        auto *room = new IsoRoom;
         room->fromJson(j);
         return room;
     };

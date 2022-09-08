@@ -6,8 +6,7 @@ _G.joinedSession = false
 startupArgs = getGameStartupArgs()
 if not _G.joinedSession then
 
-    saveGamePath = startupArgs["--single-player"] or "saves/default_save.dibdab"
-    startSinglePlayerSession(saveGamePath)
+    startSinglePlayerSession(nil)
 
     username = startupArgs["--username"] or "poopoo"
     joinSession(username, function(declineReason)
@@ -27,4 +26,4 @@ function startLevel()
     openScreen("scripts/ui_screens/LevelScreen")
 end
 
-startLevel()
+showMainMenu = true

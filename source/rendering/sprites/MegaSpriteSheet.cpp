@@ -7,7 +7,7 @@ MegaSpriteSheet::MegaSpriteSheet() : size(Game::settings.graphics.megaSpriteShee
 {
     used.resize(getChunksPerRow() * getChunksPerRow());
     fbo = new FrameBuffer(size, size);
-    fbo->addColorTexture(GL_RGB4, GL_RGB, GL_NEAREST, GL_NEAREST, GL_UNSIGNED_BYTE);
+    fbo->addColorTexture(GL_RGB8, GL_RGB, GL_NEAREST, GL_NEAREST, GL_UNSIGNED_BYTE);
     fbo->addDepthBuffer();
 }
 

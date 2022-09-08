@@ -11,15 +11,20 @@ LevelScreen::LevelScreen(Level *lvl) : lvl(lvl)
         if (!localPlayer || localPlayer->id != playerId)
             return;
         std::cout << "Local player entered room. Show RoomScreen\n";
-        showRoom(dynamic_cast<Room3D *>(room));
+        showRoom(room);
     };
 
     onRoomDeletion = lvl->beforeRoomDeletion += [this](Room *r)
     {
-        if (roomScreen && r == roomScreen->room)
+        if (room3DScreen && r == room3DScreen->room)
         {
-            delete roomScreen;
-            roomScreen = NULL;
+            delete room3DScreen;
+            room3DScreen = NULL;
+        }
+        if (isoRoomScreen && r == isoRoomScreen->room)
+        {
+            delete isoRoomScreen;
+            isoRoomScreen = NULL;
         }
     };
 }
@@ -27,18 +32,23 @@ LevelScreen::LevelScreen(Level *lvl) : lvl(lvl)
 void LevelScreen::render(double deltaTime)
 {
     renderDebugTools();
-    if (roomScreen)
-        roomScreen->render(deltaTime);
+    if (room3DScreen)
+        room3DScreen->render(deltaTime);
+    if (isoRoomScreen)
+        isoRoomScreen->render(deltaTime);
 }
 
 void LevelScreen::onResize()
 {
-    if (roomScreen)
-        roomScreen->onResize();
+    if (room3DScreen)
+        room3DScreen->onResize();
+    if (isoRoomScreen)
+        isoRoomScreen->onResize();
 }
 
 void LevelScreen::renderDebugTools()
 {
+    return;
     if (!dibidab::settings.showDeveloperOptions)
         return;
 
@@ -58,14 +68,25 @@ void LevelScreen::renderDebugTools()
     ImGui::EndMainMenuBar();
 }
 
-void LevelScreen::showRoom(Room3D *r)
+void LevelScreen::showRoom(Room *r)
 {
-    delete roomScreen;
-    roomScreen = NULL;
-    if (r)
+    delete room3DScreen;
+    room3DScreen = nullptr;
+    delete isoRoomScreen;
+    isoRoomScreen = nullptr;
+
+    if (r == nullptr)
+        return;
+
+    if (auto r3d = dynamic_cast<Room3D *>(r))
     {
-        roomScreen = new Room3DScreen(r);
-        roomScreen->onResize();
+        room3DScreen = new Room3DScreen(r3d);
+        room3DScreen->onResize();
+    }
+    else if (auto rIso = dynamic_cast<IsoRoom *>(r))
+    {
+        isoRoomScreen = new IsoRoomScreen(rIso);
+        isoRoomScreen->onResize();
     }
 }
 

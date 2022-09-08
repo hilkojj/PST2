@@ -13,10 +13,16 @@ GraphicsSettings @not_a_component @json_with_keys:
   pixelsPerMeter: [uint, 24u]
 
 KeyInputSettings @not_a_component @json_with_keys:
-  retryLevel: [KeyInput::Key, GLFW_KEY_R]
+  moveCameraUp: [KeyInput::Key, GLFW_KEY_W]
+  moveCameraLeft: [KeyInput::Key, GLFW_KEY_A]
+  moveCameraDown: [KeyInput::Key, GLFW_KEY_S]
+  moveCameraRight: [KeyInput::Key, GLFW_KEY_D]
+  moveCameraSpeed: [float, 2.0f]
+  rotateCameraLeft: [KeyInput::Key, GLFW_KEY_LEFT]
+  rotateCameraRight: [KeyInput::Key, GLFW_KEY_RIGHT]
+
   flyCamera: [KeyInput::Key, GLFW_KEY_F]
   stopFlyingCamera: [KeyInput::Key, GLFW_KEY_ESCAPE]
-
   moveEntity: [ KeyInput::Key, GLFW_KEY_G ]
   gizmoNeedCtrl: [ bool, true ]
   gizmoToggleLocal: [ KeyInput::Key, GLFW_KEY_L ]
