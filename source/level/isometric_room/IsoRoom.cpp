@@ -118,11 +118,11 @@ void IsoRoom::updateCamera(double deltaTime)
 
     if (cameraFocus != prevCameraFocus)
     {
-        cameraMoveSpeedMultiplier = clamp<float>(cameraMoveSpeedMultiplier + deltaTime * 4.0f, 1.0f, 8.0f);
+        cameraMoveSpeedMultiplier = clamp<float>(cameraMoveSpeedMultiplier + deltaTime * 8.0f, 1.0f, 8.0f);
     }
     else
     {
-        cameraMoveSpeedMultiplier = clamp<float>(cameraMoveSpeedMultiplier - deltaTime * 16.0f, 1.0f, 8.0f);
+        cameraMoveSpeedMultiplier = clamp<float>(cameraMoveSpeedMultiplier - deltaTime * 32.0f, 1.0f, 8.0f);
     }
 
     if (KeyInput::justPressed(Game::settings.keyInput.rotateCameraLeft))

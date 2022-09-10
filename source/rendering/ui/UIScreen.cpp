@@ -18,18 +18,28 @@ namespace UIScreenWidgets
     bool justResized = false;
     bool showAbout = false;
 
-    void loadLevel(Level *lvl)
+    namespace
     {
-        auto &session = dibidab::getCurrentSession();
-        auto singleplayerSession = dynamic_cast<SingleplayerSession *>(&session);
-        if (singleplayerSession)
+        void loadLevel(Level *lvl)
         {
-            singleplayerSession->setLevel(lvl);
-            Game::uiScreenManager->closeActiveScreen();
-            // TODO: either completely remove scripts for UI screens, or add ImGUI bindings to lua.
-            Game::uiScreenManager->openScreen(asset<luau::Script>("scripts/ui_screens/LevelScreen"));
+            auto &session = dibidab::getCurrentSession();
+            auto singleplayerSession = dynamic_cast<SingleplayerSession *>(&session);
+            if (singleplayerSession)
+            {
+                singleplayerSession->setLevel(lvl);
+                Game::uiScreenManager->closeActiveScreen();
+                // TODO: either completely remove scripts for UI screens, or add ImGUI bindings to lua.
+                if (lvl)
+                {
+                    Game::uiScreenManager->openScreen(asset<luau::Script>("scripts/ui_screens/LevelScreen"));
+                }
+                else
+                {
+                    Game::uiScreenManager->openScreen(asset<luau::Script>("scripts/ui_screens/StartupScreen"));
+                }
+            }
+            else delete lvl;
         }
-        else delete lvl;
     }
 
     void showMainMenuWindow()
@@ -151,6 +161,74 @@ namespace UIScreenWidgets
         }
         ImGui::End();
     }
+
+    void showMainMenuBar()
+    {
+        ImGui::BeginMainMenuBar();
+
+        if (ImGui::BeginMenu("Game"))
+        {
+            if (dibidab::tryGetCurrentSession() && dibidab::getCurrentSession().getLevel())
+            {
+                if (ImGui::MenuItem("Save"))
+                {
+                    dibidab::getCurrentSession().getLevel()->save(nullptr);
+                }
+                if (ImGui::MenuItem("Save & exit to menu"))
+                {
+                    loadLevel(nullptr);
+                }
+            }
+
+            ImGui::EndMenu();
+        }
+        ImGui::EndMainMenuBar();
+    }
+
+    void showSaveOnExitPopupIfNeeded()
+    {
+        static bool canClose = false;
+
+        static auto canCloseDelegate = gu::canClose += [] {
+
+            if (!dibidab::tryGetCurrentSession() || !dibidab::getCurrentSession().getLevel())
+            {
+                return true;
+            }
+            return canClose;
+        };
+
+        if (gu::shouldClose() && dibidab::tryGetCurrentSession() && dibidab::getCurrentSession().getLevel())
+        {
+            ImGui::OpenPopup("Save game before exit?");
+
+            if (ImGui::BeginPopupModal("Save game before exit?", nullptr, ImGuiWindowFlags_NoSavedSettings))
+            {
+                ImGui::Text("Do you want to save your progress before exiting the game?");
+                if (ImGui::Button("Yes"))
+                {
+                    dibidab::getCurrentSession().getLevel()->saveOnDestruct = true;
+                    canClose = true;
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("No"))
+                {
+                    dibidab::getCurrentSession().getLevel()->saveOnDestruct = false;
+                    canClose = true;
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("Cancel"))
+                {
+                    canClose = false;
+                    gu::setShouldClose(false);
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::EndPopup();
+            }
+        }
+    }
 }
 
 
@@ -194,6 +272,9 @@ void UIScreen::render(double deltaTime)
     update(deltaTime); // todo: move this? Update ALL UIScreens? or only the active one?
 
     //ImGui::ShowDemoWindow();
+
+    UIScreenWidgets::showSaveOnExitPopupIfNeeded();
+    UIScreenWidgets::showMainMenuBar();
 
     if (luaEnvironment["showMainMenu"] == true)
     {
