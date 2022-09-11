@@ -44,7 +44,9 @@ class IsoTileMapMeshGenerator
 
         void removeTri(uint index);
 
-        void addTri(uvec3 tile, TrisPerTile &, vec3 a, vec3 b, vec3 c);
+        void addTri(const uvec3 &tile, TrisPerTile &, vec3 a, vec3 b, vec3 c, uint8 rotation = 0u);
+
+        void rotateTri(const uvec3 &tile, vec3 &a, vec3 &b, vec3 &c, uint8 rotation) const;
 
         IsoTileMap *map;
 

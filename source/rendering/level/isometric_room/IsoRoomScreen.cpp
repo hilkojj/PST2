@@ -62,8 +62,8 @@ void IsoRoomScreen::render(double deltaTime)
 void IsoRoomScreen::onResize()
 {
     Screen::onResize();
-    camera.viewportWidth = gu::widthPixels / Game::settings.graphics.pixelsPerMeter;
-    camera.viewportHeight = gu::heightPixels / Game::settings.graphics.pixelsPerMeter;
+    camera.viewportWidth = float(gu::widthPixels) / float(Game::settings.graphics.pixelsPerMeter);
+    camera.viewportHeight = float(gu::heightPixels) / float(Game::settings.graphics.pixelsPerMeter);
     camera.update();
 }
 
@@ -72,7 +72,7 @@ void IsoRoomScreen::renderDebugStuff(double deltaTime)
     if (!dibidab::settings.showDeveloperOptions)
         return;
 
-    gu::profiler::Zone z("debug");
+    gu::profiler::Zone zone("debug");
 
     entityInspector.drawGUI(nullptr, lineRenderer);
 
@@ -104,6 +104,7 @@ void IsoRoomScreen::showTerrainEditor()
 {
     static IsoTileShape shape = IsoTileShape::full;
     static uint yLevel = 0u;
+    static uint rotation = 0u;
 
     ImGui::SetNextWindowSize(ImVec2(250.0f, -1.0f), ImGuiCond_Appearing);
     if (ImGui::Begin("Terrain"))
@@ -142,6 +143,37 @@ void IsoRoomScreen::showTerrainEditor()
             ImGui::Text("Tile layer:");
             static const uint step = 1;
             ImGui::InputScalar("", ImGuiDataType_U32, &yLevel, &step, &step, "%u");
+        }
+        ImGui::EndChild();
+        ImGui::PopStyleColor();
+
+        ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(0, 255, 100, 100));
+        ImGui::BeginChild("Rotation", ImVec2(-1, 80), true, ImGuiWindowFlags_None);
+        {
+            ImGui::Text("Rotation:");
+            if (ImGui::Button("<"))
+            {
+                if (rotation == 0u)
+                {
+                    rotation = 3u;
+                }
+                else
+                {
+                    rotation--;
+                }
+            }
+            ImGui::SameLine();
+            if (ImGui::Button(">"))
+            {
+                if (rotation == 3u)
+                {
+                    rotation = 0u;
+                }
+                else
+                {
+                    rotation++;
+                }
+            }
         }
         ImGui::EndChild();
         ImGui::PopStyleColor();
@@ -193,7 +225,7 @@ void IsoRoomScreen::showTerrainEditor()
 
         if (MouseInput::justPressed(GLFW_MOUSE_BUTTON_LEFT))
         {
-            map.setTile(tilePos.x, tilePos.y, tilePos.z, {shape, 0u});
+            map.setTile(tilePos.x, tilePos.y, tilePos.z, {shape, rotation});
         }
     }
     ImGui::BeginMainMenuBar();

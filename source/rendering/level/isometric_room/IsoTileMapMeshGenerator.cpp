@@ -182,8 +182,80 @@ void IsoTileMapMeshGenerator::Chunk::updateTile(uint x, uint y, uint z)
             );
             break;
         case IsoTileShape::slope:
+            // y+
+            addTri(tilePosChunkRelative, trisForThisTile,
+                tilePos + vec3(0, 0, 0),
+                tilePos + vec3(0, IsoTileMap::TILE_HEIGHT, 1),
+                tilePos + vec3(1, 0, 0),
+                tile.rotation
+            );
+            addTri(tilePosChunkRelative, trisForThisTile,
+                tilePos + vec3(0, IsoTileMap::TILE_HEIGHT, 1),
+                tilePos + vec3(1, IsoTileMap::TILE_HEIGHT, 1),
+                tilePos + vec3(1, 0, 0),
+                tile.rotation
+            );
+
+            // x-
+            addTri(tilePosChunkRelative, trisForThisTile,
+                tilePos + vec3(0, 0, 1),
+                tilePos + vec3(0, IsoTileMap::TILE_HEIGHT, 1),
+                tilePos + vec3(0, 0, 0),
+                tile.rotation
+            );
+
+            // x+
+            addTri(tilePosChunkRelative, trisForThisTile,
+                tilePos + vec3(1, 0, 1),
+                tilePos + vec3(1, 0, 0),
+                tilePos + vec3(1, IsoTileMap::TILE_HEIGHT, 1),
+                tile.rotation
+            );
+
+            // z+
+            addTri(tilePosChunkRelative, trisForThisTile,
+                tilePos + vec3(0, 0, 1),
+                tilePos + vec3(1, 0, 1),
+                tilePos + vec3(0, IsoTileMap::TILE_HEIGHT, 1),
+                tile.rotation
+            );
+            addTri(tilePosChunkRelative, trisForThisTile,
+                tilePos + vec3(1, IsoTileMap::TILE_HEIGHT, 1),
+                tilePos + vec3(0, IsoTileMap::TILE_HEIGHT, 1),
+                tilePos + vec3(1, 0, 1),
+                tile.rotation
+            );
             break;
         case IsoTileShape::slope_corner:
+            // y+
+            addTri(tilePosChunkRelative, trisForThisTile,
+                tilePos + vec3(0, 0, 0),
+                tilePos + vec3(1, IsoTileMap::TILE_HEIGHT, 1),
+                tilePos + vec3(1, 0, 0),
+                tile.rotation
+            );
+            addTri(tilePosChunkRelative, trisForThisTile,
+                tilePos + vec3(0, 0, 0),
+                tilePos + vec3(0, 0, 1),
+                tilePos + vec3(1, IsoTileMap::TILE_HEIGHT, 1),
+                tile.rotation
+            );
+
+            // x+
+            addTri(tilePosChunkRelative, trisForThisTile,
+                tilePos + vec3(1, IsoTileMap::TILE_HEIGHT, 1),
+                tilePos + vec3(1, 0, 1),
+                tilePos + vec3(1, 0, 0),
+                tile.rotation
+            );
+
+            // z+
+            addTri(tilePosChunkRelative, trisForThisTile,
+                tilePos + vec3(1, IsoTileMap::TILE_HEIGHT, 1),
+                tilePos + vec3(0, 0, 1),
+                tilePos + vec3(1, 0, 1),
+                tile.rotation
+            );
             break;
     }
 }
@@ -263,9 +335,34 @@ void IsoTileMapMeshGenerator::Chunk::removeTri(uint index)
     tilePerTri.pop_back();
 }
 
-void IsoTileMapMeshGenerator::Chunk::addTri(uvec3 tile, IsoTileMapMeshGenerator::Chunk::TrisPerTile &trisForThisTile,
-                                            vec3 a, vec3 b, vec3 c)
+void IsoTileMapMeshGenerator::Chunk::rotateTri(const uvec3 &tile, vec3 &a, vec3 &b, vec3 &c, uint8 rotation) const
 {
+    if (rotation == 0u)
+    {
+        return;
+    }
+
+    // todo, this function can be optimized by using (x,y)->(−y,x)
+
+    vec3 center = vec3(tile + offset) + vec3(0.5f, 0.0f, 0.5f);
+    a -= center;
+    a = rotate(a, 90 * mu::DEGREES_TO_RAD * rotation, mu::Y);
+    a += center;
+
+    b -= center;
+    b = rotate(b, 90 * mu::DEGREES_TO_RAD * rotation, mu::Y);
+    b += center;
+
+    c -= center;
+    c = rotate(c, 90 * mu::DEGREES_TO_RAD * rotation, mu::Y);
+    c += center;
+}
+
+void IsoTileMapMeshGenerator::Chunk::addTri(const uvec3 &tile, IsoTileMapMeshGenerator::Chunk::TrisPerTile &trisForThisTile,
+                                       vec3 a, vec3 b, vec3 c, uint8 rotation)
+{
+    rotateTri(tile, a, b, c, rotation);
+
     tilePerTri.push_back(tile);
     int firstVertexIndex = mesh->nrOfVertices();
     trisForThisTile.indices.emplace(firstVertexIndex);

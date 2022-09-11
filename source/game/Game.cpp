@@ -1,4 +1,6 @@
 
+#include "../level/isometric_room/IsoTileMap.h"
+
 #include <game/dibidab.h>
 #include "Game.h"
 
@@ -9,6 +11,8 @@ Game::Settings Game::settings;
 void setShaderDefinitions()
 {
     ShaderDefinitions::global().defineInt("MAX_BONES", Game::settings.graphics.maxArmatureBones);
+    ShaderDefinitions::global().defineInt("PIXELS_PER_METER", Game::settings.graphics.pixelsPerMeter);
+    ShaderDefinitions::global().defineFloat("TILE_HEIGHT", IsoTileMap::TILE_HEIGHT);
     #ifdef EMSCRIPTEN
     ShaderDefinitions::global().define("WEBGL");
     #endif
