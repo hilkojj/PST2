@@ -1,9 +1,9 @@
 #ifndef GAME_ISOROOM_H
 #define GAME_ISOROOM_H
 
-#include "IsoTileMap.h"
-
 #include <level/room/Room.h>
+
+class IsoTileMap;
 
 class IsoRoom : public Room
 {

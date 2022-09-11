@@ -1,6 +1,6 @@
 
 #include "IsoRoom.h"
-
+#include "IsoTileMap.h"
 #include "../../game/Game.h"
 
 #include <level/Level.h>
@@ -28,6 +28,8 @@ void IsoRoom::initialize(Level *lvl)
 
 void IsoRoom::update(double deltaTime)
 {
+    assert(tileMap);
+    tileMap->nextFrame();
     Room::update(deltaTime);
 
     updateCamera(deltaTime);
@@ -48,10 +50,16 @@ void IsoRoom::toJson(json &j)
     assert(tileMap);
     Room::toJson(j);
     j["tileMapSize"] = tileMap->size;
+
+    to_json(j["tileMap"], *tileMap);
+
+    /*
     std::vector<char> tileMapBinary;
     tileMap->toBinary(tileMapBinary);
     std::string tileMapBase64 = base64::encode(&tileMapBinary[0], tileMapBinary.size());
     j["tileMapBase64"] = tileMapBase64;
+    */
+
     j["cameraFocus"] = cameraFocus;
 }
 
@@ -59,11 +67,16 @@ void IsoRoom::fromJson(const json &j)
 {
     assert(tileMap == nullptr);
     Room::fromJson(j);
-    std::string tileMapBase64 = j.at("tileMapBase64");
-    auto tileMapBinary = base64::decode(&tileMapBase64[0], tileMapBase64.size());
+
     uvec3 tileMapSize = j.at("tileMapSize");
     tileMap = new IsoTileMap(tileMapSize);
+    from_json(j.at("tileMap"), *tileMap);
+
+    /*
+    std::string tileMapBase64 = j.at("tileMapBase64");
+    auto tileMapBinary = base64::decode(&tileMapBase64[0], tileMapBase64.size());
     tileMap->fromBinary(&tileMapBinary[0], tileMapBinary.size());
+     */
     cameraFocus = j.at("cameraFocus");
 }
 

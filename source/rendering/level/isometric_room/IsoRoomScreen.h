@@ -2,12 +2,14 @@
 #ifndef GAME_ISOROOMSCREEN_H
 #define GAME_ISOROOMSCREEN_H
 
+#include "IsoTileMapMeshGenerator.h"
+#include "IsoEntityInspector.h"
+#include "../../../level/isometric_room/IsoRoom.h"
+
 #include <graphics/orthographic_camera.h>
 #include <graphics/frame_buffer.h>
 #include <graphics/3d/debug_line_renderer.h>
 #include <graphics/shader_asset.h>
-#include "../../../level/isometric_room/IsoRoom.h"
-#include "IsoEntityInspector.h"
 
 class IsoRoomScreen : public Screen
 {
@@ -15,7 +17,9 @@ class IsoRoomScreen : public Screen
 
     IsoEntityInspector entityInspector;
 
-    //ShaderAsset ;
+    IsoTileMapMeshGenerator tileMapMeshGenerator;
+
+    ShaderAsset tileMapShader;
 
     OrthographicCamera camera;
 
@@ -28,6 +32,8 @@ class IsoRoomScreen : public Screen
     void render(double deltaTime) override;
 
     void onResize() override;
+
+    void showTerrainEditor();
 
     void renderDebugStuff(double deltaTime);
 

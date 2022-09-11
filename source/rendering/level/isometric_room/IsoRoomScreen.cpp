@@ -1,17 +1,24 @@
 
 #include "IsoRoomScreen.h"
-
+#include "../../../level/isometric_room/IsoTileMap.h"
 #include "../../../game/Game.h"
 
 #include <game/dibidab.h>
 
-IsoRoomScreen::IsoRoomScreen(IsoRoom *room) : room(room), entityInspector(*room, "IsoRoom"), camera(0.1f, 1000.f, 0.0f, 0.0f)
+IsoRoomScreen::IsoRoomScreen(IsoRoom *room)
+  : room(room),
+    entityInspector(*room, "IsoRoom"),
+    camera(0.1f, 1000.f, 0.0f, 0.0f),
+    tileMapMeshGenerator(&room->getTileMap()),
+    tileMapShader("tileMapShader", "shaders/iso/tile_map.vert", "shaders/iso/tile_map.frag")
 {
     entityInspector.createEntity_showSubFolder = "simulation";
 }
 
 void IsoRoomScreen::render(double deltaTime)
 {
+    gu::profiler::Zone z("IsoRoom");
+
     // set opengl settings and clear canvas
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
@@ -23,7 +30,7 @@ void IsoRoomScreen::render(double deltaTime)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // update camera
-    camera.position = -normalize(room->cameraDirection) * 128.0f;
+    camera.position = -normalize(room->cameraDirection) * 512.0f;
     vec3 camRightDir = normalize(cross(camera.position, mu::Y));
 
     camera.position = rotate(camera.position, Game::settings.graphics.isometricAngle * mu::DEGREES_TO_RAD, camRightDir);
@@ -31,6 +38,23 @@ void IsoRoomScreen::render(double deltaTime)
     camera.position.x += room->cameraFocus.x;
     camera.position.z += room->cameraFocus.z;
     camera.update();
+    lineRenderer.projection = camera.combined;
+
+    // update terrain mesh:
+    showTerrainEditor();
+    tileMapMeshGenerator.update();
+
+    // render triangles without using indices:
+    tileMapShader.use();
+    glUniformMatrix4fv(tileMapShader.location("mvp"), 1, GL_FALSE, &camera.combined[0][0]);
+    for (uint chunkX = 0; chunkX < tileMapMeshGenerator.getNrOfChunksAlongXAxis(); chunkX++)
+    {
+        for (uint chunkZ = 0; chunkZ < tileMapMeshGenerator.getNrOfChunksAlongZAxis(); chunkZ++)
+        {
+            auto &mesh = tileMapMeshGenerator.getMeshForChunk(chunkX, chunkZ);
+            mesh->renderArrays(GL_TRIANGLES, mesh->nrOfVertices());
+        }
+    }
 
     renderDebugStuff(deltaTime);
 }
@@ -49,7 +73,6 @@ void IsoRoomScreen::renderDebugStuff(double deltaTime)
         return;
 
     gu::profiler::Zone z("debug");
-    lineRenderer.projection = camera.combined;
 
     entityInspector.drawGUI(nullptr, lineRenderer);
 
@@ -75,4 +98,105 @@ void IsoRoomScreen::renderDebugStuff(double deltaTime)
 IsoRoomScreen::~IsoRoomScreen()
 {
 
+}
+
+void IsoRoomScreen::showTerrainEditor()
+{
+    static IsoTileShape shape = IsoTileShape::full;
+    static uint yLevel = 0u;
+
+    ImGui::SetNextWindowSize(ImVec2(250.0f, -1.0f), ImGuiCond_Appearing);
+    if (ImGui::Begin("Terrain"))
+    {
+        ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(255, 0, 0, 100));
+        ImGui::BeginChild("Shape", ImVec2(-1, 80), true, ImGuiWindowFlags_None);
+        {
+            ImGui::Text("Tile shape:");
+            static const ImVec2 btnSize(40, 40);
+            if (ImGui::Button("Empty", btnSize))
+            {
+                shape = IsoTileShape::empty;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Full", btnSize))
+            {
+                shape = IsoTileShape::full;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Slope", btnSize))
+            {
+                shape = IsoTileShape::slope;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Slope corner", btnSize))
+            {
+                shape = IsoTileShape::slope_corner;
+            }
+        }
+        ImGui::EndChild();
+        ImGui::PopStyleColor();
+
+        ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(0, 100, 255, 100));
+        ImGui::BeginChild("Layer", ImVec2(-1, 80), true, ImGuiWindowFlags_None);
+        {
+            ImGui::Text("Tile layer:");
+            static const uint step = 1;
+            ImGui::InputScalar("", ImGuiDataType_U32, &yLevel, &step, &step, "%u");
+        }
+        ImGui::EndChild();
+        ImGui::PopStyleColor();
+    }
+    ImGui::End();
+
+    if (MouseInput::yScroll > 0.0)
+    {
+        yLevel++;
+    }
+    if (MouseInput::yScroll < 0.0 && yLevel > 0u)
+    {
+        yLevel--;
+    }
+    if (yLevel >= room->getTileMap().size.y)
+    {
+        yLevel = 0u;
+    }
+
+    if (gu::widthPixels == 0 || gu::heightPixels == 0 || camera.direction.y == 0.0f)
+    {
+        return;
+    }
+
+    vec3 cursorPos3d = camera.position;
+    cursorPos3d -= camera.right * camera.viewportWidth * 0.5f;
+    cursorPos3d += camera.right * float(MouseInput::mouseX / gu::widthPixels) * camera.viewportWidth;
+
+    cursorPos3d += camera.up * camera.viewportHeight * 0.5f;
+    cursorPos3d -= camera.up * float(MouseInput::mouseY / gu::heightPixels) * camera.viewportHeight;
+
+    float deltaY = cursorPos3d.y - float(yLevel) * IsoTileMap::TILE_HEIGHT;
+    vec3 ray = camera.direction;
+    ray *= -1.0 / ray.y;
+
+    cursorPos3d += ray * deltaY;
+
+    uvec3 tilePos = uvec3(cursorPos3d.x, cursorPos3d.y / IsoTileMap::TILE_HEIGHT, cursorPos3d.z);
+
+    auto &map = room->getTileMap();
+    if (map.isValidPosition(tilePos.x, tilePos.y, tilePos.z))
+    {
+        lineRenderer.square(
+            vec3(tilePos.x, tilePos.y * IsoTileMap::TILE_HEIGHT, tilePos.z),
+            1.0f, mu::ONE_3, mu::X, mu::Z
+        );
+
+        ImGui::SetTooltip("%hhu", map.getTile(tilePos.x, tilePos.y, tilePos.z).shape);
+
+        if (MouseInput::justPressed(GLFW_MOUSE_BUTTON_LEFT))
+        {
+            map.setTile(tilePos.x, tilePos.y, tilePos.z, {shape, 0u});
+        }
+    }
+    ImGui::BeginMainMenuBar();
+    ImGui::Text("%s", to_string(tilePos).c_str());
+    ImGui::EndMainMenuBar();
 }

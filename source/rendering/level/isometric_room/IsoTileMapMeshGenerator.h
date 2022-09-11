@@ -1,0 +1,72 @@
+
+#ifndef GAME_ISOTILEMAPMESHGENERATOR_H
+#define GAME_ISOTILEMAPMESHGENERATOR_H
+
+#include <graphics/3d/mesh.h>
+#include <set>
+
+class IsoTileMap;
+
+class IsoTileMapMeshGenerator
+{
+
+  public:
+    explicit IsoTileMapMeshGenerator(IsoTileMap *);
+
+    void update();
+
+    uint getNrOfChunksAlongXAxis() const;
+
+    uint getNrOfChunksAlongZAxis() const;
+
+    const SharedMesh &getMeshForChunk(uint x, uint z) const;
+
+  private:
+
+    struct Chunk
+    {
+        struct TrisPerTile
+        {
+            std::set<uint> indices; // indices of the first vertex of each triangle.
+        };
+
+        Chunk(IsoTileMap *, const uvec3 &offset);
+
+        void update(const uvec3 &from, const uvec3 &to);
+
+        void updateTile(uint x, uint y, uint z);
+
+        void uploadMesh();
+
+        void setUpMesh();
+
+        TrisPerTile &getTrisPerTile(uint x, uint y, uint z);
+
+        void removeTri(uint index);
+
+        void addTri(uvec3 tile, TrisPerTile &, vec3 a, vec3 b, vec3 c);
+
+        IsoTileMap *map;
+
+        const uvec3 offset;
+
+        uint nrOfVerticesUsed = 0u;
+
+        bool dirtyMesh = false;
+
+        SharedMesh mesh;
+
+        std::vector<TrisPerTile> trisPerTile;
+
+        std::vector<uvec3> tilePerTri;  // stores for each triangle (NOT vertex) in the mesh, to which tile it belongs
+    };
+
+    IsoTileMap *map;
+    std::vector<Chunk> chunks;
+
+    Chunk &getChunkForPosition(const uvec3 &);
+
+};
+
+
+#endif //GAME_ISOTILEMAPMESHGENERATOR_H
