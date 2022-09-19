@@ -74,7 +74,7 @@ const SharedMesh &IsoTileMapMeshGenerator::getMeshForChunk(uint x, uint z) const
     return chunks[x + z * getNrOfChunksAlongZAxis()].mesh;
 }
 
-#define VERTS_PER_SMALLEST_VERT_BUFFER (IsoTileMap::CHUNK_WIDTH * IsoTileMap::CHUNK_WIDTH * 32 * 2)
+#define VERTS_PER_SMALLEST_VERT_BUFFER (IsoTileMap::CHUNK_WIDTH * IsoTileMap::CHUNK_WIDTH * 30 * 2)
 
 IsoTileMapMeshGenerator::Chunk::Chunk(IsoTileMap *map, const uvec3 &offset) : map(map), offset(offset)
 {

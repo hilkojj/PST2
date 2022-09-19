@@ -85,7 +85,7 @@ jobs:
       uses: mymindstorm/setup-emsdk@v7
       with:
         # Make sure to set a version number!
-        version: 1.38.47
+        version: 3.1.15
         # This is the name of the cache folder.
         # The cache folder will be placed in the build directory,
         #  so make sure it doesn't conflict with anything!
@@ -98,8 +98,8 @@ jobs:
         git submodule update --init --recursive
         find . -name "*.blend" -type f -delete
         cd html
-        emconfigure cmake .
-        emconfigure cmake .
+        emcmake cmake .
+        emcmake cmake .
         make -j8
         cp -r ./html_assets ./out/html_assets   # e.g. images used in index.html
     - name: Upload Artifacts # The project is then uploaded as an artifact named 'site'.
