@@ -74,7 +74,7 @@ const SharedMesh &IsoTileMapMeshGenerator::getMeshForChunk(uint x, uint z) const
     return chunks[x + z * getNrOfChunksAlongZAxis()].mesh;
 }
 
-#define VERTS_PER_SMALLEST_VERT_BUFFER IsoTileMap::CHUNK_WIDTH * IsoTileMap::CHUNK_WIDTH * 2
+#define VERTS_PER_SMALLEST_VERT_BUFFER (IsoTileMap::CHUNK_WIDTH * IsoTileMap::CHUNK_WIDTH * 32 * 2)
 
 IsoTileMapMeshGenerator::Chunk::Chunk(IsoTileMap *map, const uvec3 &offset) : map(map), offset(offset)
 {
@@ -95,11 +95,6 @@ void IsoTileMapMeshGenerator::Chunk::update(const uvec3 &from, const uvec3 &to)
             }
         }
     }
-}
-
-namespace
-{
-
 }
 
 void IsoTileMapMeshGenerator::Chunk::updateTile(uint x, uint y, uint z)
@@ -281,13 +276,14 @@ void IsoTileMapMeshGenerator::Chunk::uploadMesh()
         auto vertBuffer = VertBuffer::with(mesh->attributes);
         vertBuffer->vboUsage = GL_DYNAMIC_DRAW;
 
-        auto vertsArraySize = mesh->vertices.size();
-        mesh->vertices.resize((vertsArraySize / VERTS_PER_SMALLEST_VERT_BUFFER + 1) * VERTS_PER_SMALLEST_VERT_BUFFER);
+        auto meshNumBytes = mesh->vertices.size();
+
+        mesh->vertices.resize((mesh->nrOfVertices() / VERTS_PER_SMALLEST_VERT_BUFFER + 1) * VERTS_PER_SMALLEST_VERT_BUFFER * mesh->attributes.getVertSize());
 
         vertBuffer->add(mesh);
         vertBuffer->upload(false);
 
-        mesh->vertices.resize(vertsArraySize);
+        mesh->vertices.resize(meshNumBytes);
     }
 }
 

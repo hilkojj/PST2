@@ -12,15 +12,15 @@ void main()
 
     const float gridLightReduction = 0.85f;
 
-    if (mod(v_position.x, 1.0f) < 1.0f / (PIXELS_PER_METER * 0.75f) && abs(v_normal.x) < 0.99f)
+    if (mod(v_position.x, 1.0f) < 1.0f / (float(PIXELS_PER_METER) * 0.75f) && abs(v_normal.x) < 0.99f)
     {
         light *= gridLightReduction;
     }
-    else if (mod(v_position.y, TILE_HEIGHT) < 1.0f / (PIXELS_PER_METER * 0.75f) && abs(v_normal.y) < 0.99f)
+    else if (mod(v_position.y, TILE_HEIGHT) < 1.0f / (float(PIXELS_PER_METER) * 0.75f) && abs(v_normal.y) < 0.99f)
     {
         light *= gridLightReduction;
     }
-    else if (mod(v_position.z, 1.0f) < 1.0f / (PIXELS_PER_METER * 0.75f) && abs(v_normal.z) < 0.99f)
+    else if (mod(v_position.z, 1.0f) < 1.0f / (float(PIXELS_PER_METER) * 0.75f) && abs(v_normal.z) < 0.99f)
     {
         light *= gridLightReduction;
     }

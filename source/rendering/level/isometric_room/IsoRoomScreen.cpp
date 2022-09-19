@@ -225,7 +225,11 @@ void IsoRoomScreen::showTerrainEditor()
 
         if (MouseInput::justPressed(GLFW_MOUSE_BUTTON_LEFT))
         {
-            map.setTile(tilePos.x, tilePos.y, tilePos.z, {shape, rotation});
+            map.setTile(tilePos.x, tilePos.y, tilePos.z, { shape, rotation });
+        }
+        else if (MouseInput::justPressed(GLFW_MOUSE_BUTTON_RIGHT))
+        {
+            map.setTile(tilePos.x, tilePos.y, tilePos.z, { IsoTileShape::empty, 0u });
         }
     }
     ImGui::BeginMainMenuBar();

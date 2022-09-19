@@ -15,6 +15,13 @@ IsoRoom::IsoRoom() : cameraFocus(0), cameraDirection(mu::X + mu::Z)
 IsoRoom::IsoRoom(const uvec3 &tileMapSize) : IsoRoom()
 {
     tileMap = new IsoTileMap(tileMapSize);
+    for (uint x = 0u; x < tileMapSize.x; x++)
+    {
+        for (uint z = 0u; z < tileMapSize.z; z++)
+        {
+            tileMap->setTile(x, 0u, z, { IsoTileShape::full, 0u });
+        }
+    }
 }
 
 void IsoRoom::initialize(Level *lvl)
