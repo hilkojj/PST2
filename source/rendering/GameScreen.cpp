@@ -23,7 +23,11 @@ GameScreen::GameScreen()
 
 bool justResized = false;
 bool loadedSprites = false;
+#ifdef EMSCRIPTEN
+double waitAfterLoading = 2.0f;
+#else
 double waitAfterLoading = 0.0f;
+#endif
 
 void GameScreen::render(double deltaTime)
 {

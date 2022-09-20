@@ -47,6 +47,7 @@ void IsoRoomScreen::render(double deltaTime)
     // render triangles without using indices:
     tileMapShader.use();
     glUniformMatrix4fv(tileMapShader.location("mvp"), 1, GL_FALSE, &camera.combined[0][0]);
+    Game::spriteSheet->fbo->colorTexture->bind(0, tileMapShader, "spriteSheet");
     for (uint chunkX = 0; chunkX < tileMapMeshGenerator.getNrOfChunksAlongXAxis(); chunkX++)
     {
         for (uint chunkZ = 0; chunkZ < tileMapMeshGenerator.getNrOfChunksAlongZAxis(); chunkZ++)
@@ -211,28 +212,31 @@ void IsoRoomScreen::showTerrainEditor()
 
     cursorPos3d += ray * deltaY;
 
-    uvec3 tilePos = uvec3(cursorPos3d.x, cursorPos3d.y / IsoTileMap::TILE_HEIGHT, cursorPos3d.z);
-
-    auto &map = room->getTileMap();
-    if (map.isValidPosition(tilePos.x, tilePos.y, tilePos.z))
+    if (mu::allGreaterOrEqualTo(cursorPos3d, 0.0))
     {
-        lineRenderer.square(
-            vec3(tilePos.x, tilePos.y * IsoTileMap::TILE_HEIGHT, tilePos.z),
-            1.0f, mu::ONE_3, mu::X, mu::Z
-        );
+        uvec3 tilePos = uvec3(cursorPos3d.x, cursorPos3d.y / IsoTileMap::TILE_HEIGHT, cursorPos3d.z);
 
-        ImGui::SetTooltip("%hhu", map.getTile(tilePos.x, tilePos.y, tilePos.z).shape);
+        auto &map = room->getTileMap();
+        if (map.isValidPosition(tilePos.x, tilePos.y, tilePos.z))
+        {
+            lineRenderer.square(
+                vec3(tilePos.x, tilePos.y * IsoTileMap::TILE_HEIGHT, tilePos.z),
+                1.0f, mu::ONE_3, mu::X, mu::Z
+            );
 
-        if (MouseInput::justPressed(GLFW_MOUSE_BUTTON_LEFT))
-        {
-            map.setTile(tilePos.x, tilePos.y, tilePos.z, { shape, rotation });
-        }
-        else if (MouseInput::justPressed(GLFW_MOUSE_BUTTON_RIGHT))
-        {
-            map.setTile(tilePos.x, tilePos.y, tilePos.z, { IsoTileShape::empty, 0u });
+            const IsoTile &currentTile = map.getTile(tilePos.x, tilePos.y, tilePos.z);
+            const IsoTileMaterial &tileMaterial = IsoTileMap::getMaterial(currentTile.material);
+
+            ImGui::SetTooltip("%hhu %s", currentTile.shape, tileMaterial.name.c_str());
+
+            if (MouseInput::justPressed(GLFW_MOUSE_BUTTON_LEFT))
+            {
+                map.setTile(tilePos.x, tilePos.y, tilePos.z, { shape, rotation });
+            }
+            else if (MouseInput::justPressed(GLFW_MOUSE_BUTTON_RIGHT))
+            {
+                map.setTile(tilePos.x, tilePos.y, tilePos.z, { IsoTileShape::empty, 0u });
+            }
         }
     }
-    ImGui::BeginMainMenuBar();
-    ImGui::Text("%s", to_string(tilePos).c_str());
-    ImGui::EndMainMenuBar();
 }

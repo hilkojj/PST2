@@ -7,13 +7,53 @@ MegaSpriteSheet::MegaSpriteSheet() : size(Game::settings.graphics.megaSpriteShee
 {
     used.resize(getChunksPerRow() * getChunksPerRow());
     fbo = new FrameBuffer(size, size);
-    fbo->addColorTexture(GL_RGB8, GL_RGB, GL_NEAREST, GL_NEAREST, GL_UNSIGNED_BYTE);
+    fbo->addColorTexture(GL_RGBA8, GL_RGBA, GL_NEAREST, GL_NEAREST, GL_UNSIGNED_BYTE);
     fbo->addDepthBuffer();
 }
 
 void MegaSpriteSheet::add(const aseprite::Sprite &sprite)
 {
-    // todo, reimplement.
+    if (sprite.mode != aseprite::Mode::rgba)
+    {
+        throw gu_err("This game does not support aseprites that are NOT in RGBA mode.");
+    }
+
+    fbo->colorTexture->bind(0);
+
+    ivec2 chunkSize(
+        ceil(vec2(sprite.width, sprite.height) / float(CHUNK_SIZE))
+    );
+
+    SubSheet subSheet;
+
+    for (auto &frame : sprite.frames)
+    {
+        uvec2 chunkOffset(0u);
+        bool foundPlace = false;
+
+        for (chunkOffset.y = 0u; chunkOffset.y < getChunksPerRow() - chunkSize.y; chunkOffset.y++)
+        {
+            for (chunkOffset.x = 0u; chunkOffset.x < getChunksPerRow() - chunkSize.x; chunkOffset.x++)
+            {
+                if (tryReserve(chunkOffset, chunkSize))
+                {
+                    foundPlace = true;
+                    break;
+                }
+            }
+            if (foundPlace)
+                break;
+        }
+        if (!foundPlace)
+            throw gu_err("MegaSpriteSheet is too small....");
+
+        glTexSubImage2D(
+            GL_TEXTURE_2D, 0, chunkOffset.x * CHUNK_SIZE, chunkOffset.y * CHUNK_SIZE, sprite.width, sprite.height,
+            GL_RGBA, GL_UNSIGNED_BYTE, &frame.pixels[0]
+        );
+        subSheet.frameOffsets.push_back(chunkOffset * CHUNK_SIZE);
+    }
+    subSheets[&sprite] = subSheet;
 }
 
 bool MegaSpriteSheet::tryReserve(const ivec2 &chunkOffset, const ivec2 &chunkSize)

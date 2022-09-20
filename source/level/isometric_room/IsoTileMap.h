@@ -2,6 +2,8 @@
 #ifndef GAME_ISOTILEMAP_H
 #define GAME_ISOTILEMAP_H
 
+#include "../../generated/IsoTileMaterial.hpp"
+
 #include <utils/math_utils.h>
 
 #include <json.hpp>
@@ -21,7 +23,7 @@ struct IsoTile
 {
     IsoTileShape shape;
     uint rotation : 2;
-
+    uint material : 6;
 };
 
 void to_json(json &, const IsoTile &);
@@ -59,6 +61,8 @@ class IsoTileMap
      * Loads a map from binary data.
      */
     void fromBinary(const char *data, int size);
+
+    static const struct IsoTileMaterial &getMaterial(uint index);
 
   private:
 

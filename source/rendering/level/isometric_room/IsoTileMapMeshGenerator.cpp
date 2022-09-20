@@ -1,6 +1,7 @@
 
 #include "IsoTileMapMeshGenerator.h"
 #include "../../../level/isometric_room/IsoTileMap.h"
+#include "../../../game/Game.h"
 
 #include <gu/profiler.h>
 #include <graphics/3d/vert_buffer.h>
@@ -97,6 +98,8 @@ void IsoTileMapMeshGenerator::Chunk::update(const uvec3 &from, const uvec3 &to)
     }
 }
 
+vec2 currentSpriteSheetOffset(0);
+
 void IsoTileMapMeshGenerator::Chunk::updateTile(uint x, uint y, uint z)
 {
     dirtyMesh = true;
@@ -104,6 +107,10 @@ void IsoTileMapMeshGenerator::Chunk::updateTile(uint x, uint y, uint z)
     uvec3 tilePosChunkRelative = uvec3(x, y, z) - offset;
     vec3 tilePos(x, y * IsoTileMap::TILE_HEIGHT, z);
     auto &tile = map->getTile(x, y, z);
+    const IsoTileMaterial &material = IsoTileMap::getMaterial(tile.material);
+    const aseprite::Sprite &tileset = material.tileset.get();
+    currentSpriteSheetOffset = Game::spriteSheet->spriteInfo(tileset).frameOffsets.at(mu::randomInt(tileset.frameCount));
+
     auto &trisForThisTile = getTrisPerTile(x - offset.x, y - offset.y, z - offset.z);
 
     while (!trisForThisTile.indices.empty())
@@ -298,6 +305,10 @@ void IsoTileMapMeshGenerator::Chunk::setUpMesh()
         "NORMAL",
         3
     });
+    attributes.add({
+        "SPRITE_SHEET_OFFSET",
+        2
+    });
     mesh = std::make_shared<Mesh>("IsoTileMapMesh_" + to_string(offset), 0, attributes);
 }
 
@@ -368,10 +379,13 @@ void IsoTileMapMeshGenerator::Chunk::addTri(const uvec3 &tile, IsoTileMapMeshGen
 
     mesh->set<vec3>(a, firstVertexIndex, 0);
     mesh->set<vec3>(normal, firstVertexIndex, sizeof(vec3));
+    mesh->set<vec2>(currentSpriteSheetOffset, firstVertexIndex, sizeof(vec3) * 2);
 
     mesh->set<vec3>(b, firstVertexIndex + 1, 0);
     mesh->set<vec3>(normal, firstVertexIndex + 1, sizeof(vec3));
+    mesh->set<vec2>(currentSpriteSheetOffset, firstVertexIndex + 1, sizeof(vec3) * 2);
 
     mesh->set<vec3>(c, firstVertexIndex + 2, 0);
     mesh->set<vec3>(normal, firstVertexIndex + 2, sizeof(vec3));
+    mesh->set<vec2>(currentSpriteSheetOffset, firstVertexIndex + 2, sizeof(vec3) * 2);
 }

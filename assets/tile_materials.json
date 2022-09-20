@@ -1,0 +1,9 @@
+[
+  {
+    "name": "Grass",
+    "tileset": "sprites/tilesets/grass"
+  },
+  {
+    "name": "Road"
+  }
+]

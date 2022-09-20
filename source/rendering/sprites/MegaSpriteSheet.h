@@ -17,7 +17,7 @@ class MegaSpriteSheet
 
     struct SubSheet
     {
-        std::vector<ivec2> frameOffsets;
+        std::vector<uvec2> frameOffsets;
     };
 
     FrameBuffer *fbo = nullptr;

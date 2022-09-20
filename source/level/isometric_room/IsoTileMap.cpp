@@ -103,3 +103,23 @@ void from_json(const json &j, IsoTileMap &map)
         throw gu_err("Trying to load a IsoTileMap with invalid size!");
     }
 }
+
+const IsoTileMaterial &IsoTileMap::getMaterial(uint index)
+{
+    static std::vector<IsoTileMaterial> materials;
+    if (index < materials.size())
+    {
+        return materials[index];
+    }
+    else
+    {
+        static bool fileLoaded = false;
+        if (!fileLoaded)
+        {
+            materials = asset<json>("tile_materials")->get<decltype(materials)>();
+            fileLoaded = true;
+            return getMaterial(index);
+        }
+        throw gu_err("Tried getting material " + std::to_string(index));
+    }
+}

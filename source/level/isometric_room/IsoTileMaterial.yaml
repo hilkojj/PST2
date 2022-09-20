@@ -1,0 +1,7 @@
+config:
+  hpp_incl:
+    - utils/aseprite/Aseprite.h
+
+IsoTileMaterial @not_a_component @json_with_keys:
+  name: string
+  tileset: asset<aseprite::Sprite>

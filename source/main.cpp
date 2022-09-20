@@ -35,6 +35,16 @@ void addAssetLoaders()
         auto sprite = new aseprite::Sprite;
         aseprite::Loader(path.c_str(), *sprite);
         Game::spriteSheet->add(*sprite);
+        for (aseprite::Frame &frame : sprite->frames)
+        {
+            frame.pixels.clear();
+            frame.pixels.shrink_to_fit();
+            for (aseprite::Cel &cel : frame.cels)
+            {
+                cel.pixels.clear();
+                cel.pixels.shrink_to_fit();
+            }
+        }
         return sprite;
     });
 }
