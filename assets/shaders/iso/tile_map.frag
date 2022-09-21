@@ -15,6 +15,7 @@ void main()
     float light = v_light;
 
     const float gridLightReduction = 0.8f;
+    const float gridLightMultiplier = 1.05f;
 
     const float halfBorderWidth = 1.0f / float(PIXELS_PER_METER);
 
@@ -29,6 +30,17 @@ void main()
     else if (mod(v_position.z + halfBorderWidth, 1.0f) < halfBorderWidth * 2.0f && abs(v_normal.z) < 0.99f)
     {
         light *= gridLightReduction;
+    }
+    else
+    {
+        if (mod(v_position.x, 1.0f) > 1.0f - halfBorderWidth * 3.0f && abs(v_normal.x) < 0.99f)
+        {
+            light *= gridLightMultiplier;
+        }
+        else if (mod(v_position.z, 1.0f) > 1.0f - halfBorderWidth * 3.0f && abs(v_normal.z) < 0.99f)
+        {
+            light *= gridLightMultiplier;
+        }
     }
 
     ivec2 texelCoords = ivec2(v_spriteSheetOffset);
