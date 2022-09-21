@@ -1,5 +1,6 @@
 
 #include "IsoRoomScreen.h"
+#include "../../ui/UIScreenWidgets.h"
 #include "../../../level/isometric_room/IsoTileMap.h"
 #include "../../../game/Game.h"
 
@@ -152,7 +153,8 @@ void IsoRoomScreen::showTerrainEditor()
         ImGui::BeginChild("Rotation", ImVec2(-1, 80), true, ImGuiWindowFlags_None);
         {
             ImGui::Text("Rotation:");
-            if (ImGui::Button("<"))
+
+            if (UIScreenWidgets::modelSpriteImageButton("tilerotleft", "RotateArrow", false, true))
             {
                 if (rotation == 0u)
                 {
@@ -164,7 +166,7 @@ void IsoRoomScreen::showTerrainEditor()
                 }
             }
             ImGui::SameLine();
-            if (ImGui::Button(">"))
+            if (UIScreenWidgets::modelSpriteImageButton("tilerotright", "RotateArrow", false, false))
             {
                 if (rotation == 3u)
                 {

@@ -271,7 +271,6 @@ void UIScreen::render(double deltaTime)
 
     update(deltaTime); // todo: move this? Update ALL UIScreens? or only the active one?
 
-    //ImGui::ShowDemoWindow();
 
     UIScreenWidgets::showSaveOnExitPopupIfNeeded();
     UIScreenWidgets::showMainMenuBar();
@@ -309,6 +308,18 @@ void UIScreen::renderDebugStuff()
         ImGui::TextDisabled("Active UIScreen:");
         ImGui::Text("%s", script.getLoadedAsset().fullPath.c_str());
 
+        ImGui::EndMenu();
+    }
+
+    if (ImGui::BeginMenu("Game"))
+    {
+        if (ImGui::MenuItem("Open 3D room"))
+        {
+            Level *level3d = new Level;
+            level3d->addRoom(new Room3D);
+            UIScreenWidgets::loadLevel(level3d);
+            level3d->getRoom(0).getTemplate("Camera").create();
+        }
         ImGui::EndMenu();
     }
     ImGui::EndMainMenuBar();

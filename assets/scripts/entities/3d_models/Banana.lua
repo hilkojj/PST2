@@ -15,7 +15,7 @@ function create(model)
             pitchSteps = 1,
             pitchMin = -45,
             pitchMax = 45,
-            spriteSize = uvec2(4, 3)    -- meters.
+            spriteSize = vec2(4, 3)    -- meters.
         }
     })
 

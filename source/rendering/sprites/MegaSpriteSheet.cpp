@@ -89,7 +89,7 @@ void MegaSpriteSheet::printUsage() const
     std::cout << usage << "% used of MegaSpriteSheet\n";
 }
 
-SharedModelSprite MegaSpriteSheet::getModelSpriteByName(const std::string &name) const
+const SharedModelSprite &MegaSpriteSheet::getModelSpriteByName(const std::string &name) const
 {
     auto it = modelSprites.find(name);
     if (it == modelSprites.end())
@@ -108,7 +108,7 @@ ModelSprite::Orientation::Frame &MegaSpriteSheet::addFrame(const std::string &mo
 
     uvec2
         chunkOffset(0u, 0u),
-        chunkSize(ceil(vec2(modelSprite->renderProperties.spriteSize * Game::settings.graphics.pixelsPerMeter) / float(CHUNK_SIZE)));
+        chunkSize(ceil(modelSprite->renderProperties.spriteSize * vec2(Game::settings.graphics.pixelsPerMeter) / float(CHUNK_SIZE)));
 
     for (chunkOffset.y = 0u; chunkOffset.y < getChunksPerRow() - chunkSize.y; chunkOffset.y++)
     {

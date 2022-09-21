@@ -87,5 +87,6 @@ float IsometricSpritesGenerator::generate()
             }
         }
     }
+    room3D.entities.destroy(entityToRender);
     return float(totalNumEntities - entitiesToRender.size()) / float(totalNumEntities);
 }

@@ -33,7 +33,7 @@ class MegaSpriteSheet
 
     const SubSheet &spriteInfo(const aseprite::Sprite &) const;
 
-    SharedModelSprite getModelSpriteByName(const std::string &) const;
+    const SharedModelSprite &getModelSpriteByName(const std::string &) const;
 
     float getUsage() const;
 
