@@ -80,13 +80,14 @@ void IsoTileMap::fromBinary(const char *data, int size)
 
 void to_json(json &j, const IsoTile &t)
 {
-    j = json::array({ int(t.shape), int(t.rotation) });
+    j = json::array({ int(t.shape), int(t.rotation), int(t.material) });
 }
 
 void from_json(const json &j, IsoTile &t)
 {
     t.shape = IsoTileShape(j[0].get<int>());
     t.rotation = j[1].get<int>();
+    t.material = j[2].get<int>();
 }
 
 void to_json(json &j, const IsoTileMap &map)
@@ -103,10 +104,18 @@ void from_json(const json &j, IsoTileMap &map)
         throw gu_err("Trying to load a IsoTileMap with invalid size!");
     }
 }
+namespace
+{
+    std::vector<IsoTileMaterial> materials;
+
+    void loadMaterials()
+    {
+        materials = asset<json>("tile_materials")->get<decltype(materials)>();
+    }
+}
 
 const IsoTileMaterial &IsoTileMap::getMaterial(uint index)
 {
-    static std::vector<IsoTileMaterial> materials;
     if (index < materials.size())
     {
         return materials[index];
@@ -116,10 +125,19 @@ const IsoTileMaterial &IsoTileMap::getMaterial(uint index)
         static bool fileLoaded = false;
         if (!fileLoaded)
         {
-            materials = asset<json>("tile_materials")->get<decltype(materials)>();
+            loadMaterials();
             fileLoaded = true;
             return getMaterial(index);
         }
         throw gu_err("Tried getting material " + std::to_string(index));
     }
+}
+
+uint IsoTileMap::getNumOfMaterials()
+{
+    if (materials.empty())
+    {
+        loadMaterials();
+    }
+    return materials.size();
 }

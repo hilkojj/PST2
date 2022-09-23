@@ -64,6 +64,8 @@ class IsoTileMap
 
     static const struct IsoTileMaterial &getMaterial(uint index);
 
+    static uint getNumOfMaterials();
+
   private:
 
     uint getTileVectorIndex(uint x, uint y, uint z) const;

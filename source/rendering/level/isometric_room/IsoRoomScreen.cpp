@@ -107,44 +107,38 @@ void IsoRoomScreen::showTerrainEditor()
     static IsoTileShape shape = IsoTileShape::full;
     static uint yLevel = 0u;
     static uint rotation = 0u;
+    static uint material = 0u;
 
-    ImGui::SetNextWindowSize(ImVec2(250.0f, -1.0f), ImGuiCond_Appearing);
-    if (ImGui::Begin("Terrain"))
+    ImGui::SetNextWindowSize(ImVec2(280.0f, -1.0f), ImGuiCond_Appearing);
+    if (ImGui::Begin("Terrain Editor"))
     {
         ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(255, 0, 0, 100));
-        ImGui::BeginChild("Shape", ImVec2(-1, 80), true, ImGuiWindowFlags_None);
+        ImGui::BeginChild("Shape", ImVec2(-1, 90), true, ImGuiWindowFlags_None);
         {
-            ImGui::Text("Tile shape:");
-            static const ImVec2 btnSize(40, 40);
-            if (ImGui::Button("Empty", btnSize))
+            auto shapeBtn = [&](const char *name, const IsoTileShape btnShape, const char *tooltip)
             {
-                shape = IsoTileShape::empty;
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("Full", btnSize))
-            {
-                shape = IsoTileShape::full;
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("Slope", btnSize))
-            {
-                shape = IsoTileShape::slope;
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("Slope corner", btnSize))
-            {
-                shape = IsoTileShape::slope_corner;
-            }
-        }
-        ImGui::EndChild();
-        ImGui::PopStyleColor();
+                const SharedModelSprite &modelSprite = Game::spriteSheet->getModelSpriteByName(name);
+                float yaw = float(rotation) * -90.0f;
+                yaw -= atan2(camera.direction.z, camera.direction.x) * mu::RAD_TO_DEGREES;
+                const ModelSprite::Orientation &orientation = modelSprite->getClosestOrientation(yaw, 0);
+                if (UIScreenWidgets::modelSpriteImageButton(name, modelSprite, orientation, shape == btnShape))
+                {
+                    shape = btnShape;
+                }
+                if (ImGui::IsItemHovered())
+                {
+                    ImGui::SetTooltip("%s", tooltip);
+                }
+            };
 
-        ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(0, 100, 255, 100));
-        ImGui::BeginChild("Layer", ImVec2(-1, 80), true, ImGuiWindowFlags_None);
-        {
-            ImGui::Text("Tile layer:");
-            static const uint step = 1;
-            ImGui::InputScalar("", ImGuiDataType_U32, &yLevel, &step, &step, "%u");
+            ImGui::Text("Tile shape:");
+            shapeBtn("TileShapeEmpty", IsoTileShape::empty, "Removes tile(s)");
+            ImGui::SameLine();
+            shapeBtn("TileShapeFull", IsoTileShape::full, "Fills tile(s) with a full block");
+            ImGui::SameLine();
+            shapeBtn("TileShapeSlope", IsoTileShape::slope, "Fills tile(s) with a sloped block");
+            ImGui::SameLine();
+            shapeBtn("TileShapeSlopeCorner", IsoTileShape::slope_corner, "Ideal for making a corner in a slope");
         }
         ImGui::EndChild();
         ImGui::PopStyleColor();
@@ -177,6 +171,35 @@ void IsoRoomScreen::showTerrainEditor()
                     rotation++;
                 }
             }
+        }
+        ImGui::EndChild();
+        ImGui::PopStyleColor();
+
+        ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(0, 100, 255, 100));
+        ImGui::BeginChild("Material", ImVec2(-1, 80), true, ImGuiWindowFlags_None);
+        {
+            ImGui::Text("Material:");
+
+            for (uint matIndex = 0u; matIndex < IsoTileMap::getNumOfMaterials(); matIndex++)
+            {
+                const IsoTileMaterial &previewMaterial = IsoTileMap::getMaterial(matIndex);
+                if (ImGui::Button(previewMaterial.name.c_str()))
+                {
+                    material = matIndex;
+                }
+                ImGui::SameLine();
+            }
+            ImGui::NewLine();
+        }
+        ImGui::EndChild();
+        ImGui::PopStyleColor();
+
+        ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(0, 100, 255, 100));
+        ImGui::BeginChild("Layer", ImVec2(-1, 80), true, ImGuiWindowFlags_None);
+        {
+            ImGui::Text("Tile layer:");
+            static const uint step = 1;
+            ImGui::InputScalar("", ImGuiDataType_U32, &yLevel, &step, &step, "%u");
         }
         ImGui::EndChild();
         ImGui::PopStyleColor();

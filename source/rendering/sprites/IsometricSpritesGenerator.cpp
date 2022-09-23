@@ -50,7 +50,7 @@ float IsometricSpritesGenerator::generate()
         {
             for (int pitchStep = 0; pitchStep < renderToSpriteSheet->pitchSteps; pitchStep++)
             {
-                float yaw = 360.0f * (float(yawStep) / float(renderToSpriteSheet->yawSteps));
+                float yaw = 360.0f * (float(yawStep) / float(renderToSpriteSheet->yawSteps)) + renderToSpriteSheet->baseYaw;
                 float pitch = 0.0f;// mix(renderToSpriteSheet->pitchMin, renderToSpriteSheet->pitchMax, float(pitchStep) / float(renderToSpriteSheet->pitchSteps));
 
                 cam.position = vec3(renderToSpriteSheet->cameraDistance, 0.0f, 0.0f);
@@ -83,6 +83,27 @@ float IsometricSpritesGenerator::generate()
                 };
                 renderer.renderRoom(renderContext);
 
+                if (renderToSpriteSheet->showGrid)
+                {
+                    DebugLineRenderer lineRenderer;
+                    lineRenderer.projection = cam.combined;
+                    for (int x = -int(renderToSpriteSheet->gridSize); x <= int(renderToSpriteSheet->gridSize); x++)
+                    {
+                        lineRenderer.line(
+                            vec3(x, 0, -int(renderToSpriteSheet->gridSize)) + renderToSpriteSheet->gridOffset,
+                            vec3(x, 0, renderToSpriteSheet->gridSize) + renderToSpriteSheet->gridOffset,
+                            renderToSpriteSheet->gridColor
+                        );
+                    }
+                    for (int z = -int(renderToSpriteSheet->gridSize); z <= int(renderToSpriteSheet->gridSize); z++)
+                    {
+                        lineRenderer.line(
+                            vec3(-int(renderToSpriteSheet->gridSize), 0, z) + renderToSpriteSheet->gridOffset,
+                            vec3(renderToSpriteSheet->gridSize, 0, z) + renderToSpriteSheet->gridOffset,
+                            renderToSpriteSheet->gridColor
+                        );
+                    }
+                }
                 Game::spriteSheet->fbo->unbind();
             }
         }

@@ -95,6 +95,7 @@ int main(int argc, char *argv[])
     ImGui::GetStyle().WindowTitleAlign = ImVec2(0.5f, 0.5f);
     ImGui::GetStyle().WindowMenuButtonPosition = ImGuiDir_Left;
     ImGui::GetStyle().FrameRounding = 0.0f;
+    ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NavEnableKeyboard;
 
     File::createDir("./saves"); // todo, see dibidab trello
     gu::setScreen(new GameScreen);

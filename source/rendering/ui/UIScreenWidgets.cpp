@@ -9,7 +9,12 @@
 bool UIScreenWidgets::modelSpriteImageButton(const char *buttonID, const char *modelName, bool inset, bool flipX)
 {
     const SharedModelSprite &modelSprite = Game::spriteSheet->getModelSpriteByName(modelName);
-    const ivec2 &spriteOffset = modelSprite->getClosestOrientation(0, 0).animations.at("default").at(0).spriteSheetOffset;
+    return modelSpriteImageButton(buttonID, modelSprite, modelSprite->getClosestOrientation(0, 0), inset, flipX);
+}
+
+bool UIScreenWidgets::modelSpriteImageButton(const char *buttonID, const SharedModelSprite &modelSprite, const ModelSprite::Orientation &orientation, bool inset, bool flipX)
+{
+    const ivec2 &spriteOffset = orientation.animations.at("default").at(0).spriteSheetOffset;
 
     auto imgPtr = (void*)(intptr_t) Game::spriteSheet->fbo->colorTexture->id;
 

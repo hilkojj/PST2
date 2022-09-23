@@ -8,15 +8,21 @@ config:
 
 RenderModel:
   modelName: std::string
-  visibilityMask: [uint, 1]
+  visibilityMask: [uint, 1u]
 
 RenderModelToSpriteSheet:
-  yawSteps: [uint, 8]
-  pitchSteps: [uint, 0]
+  yawSteps: [uint, 8u]
+  baseYaw: [float, 45.0f]
+  pitchSteps: [uint, 0u]
   pitchMin: [float, -45.0f]
   pitchMax: [float, 45.0f]
   cameraDistance: [float, 100.0f]
-  spriteSize: [vec2, vec2(2)]
+  spriteSize: [vec2, vec2(2.0f)]
+
+  showGrid: [bool, false]
+  gridSize: [uint, 10u]
+  gridOffset: [vec3, vec3(0.0f)]
+  gridColor: [vec3, vec3(1.0f)]
 
 CustomShader @dirtyable:
   vertexShaderPath: std::string
@@ -36,9 +42,9 @@ CustomShader @dirtyable:
 PlayAnimation @not_a_component @json_with_keys:
   name: std::string
   loop: [bool, true]
-  influence: [float, 1.]
+  influence: [float, 1.0f]
   timer: float
-  timeMultiplier: [float, 1.]
+  timeMultiplier: [float, 1.0f]
 
 Rigged:
   playingAnimations: std::list<PlayAnimation>

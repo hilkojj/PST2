@@ -19,7 +19,7 @@ Room3D::Room3D()
     loadedMeshAttributes
         .add_(VertAttributes::POSITION)
         .add_(VertAttributes::NORMAL)
-        .add_(VertAttributes::TANGENT)
+        .add_(VertAttributes::TANGENT_AND_SIGN)
         .add_(VertAttributes::TEX_COORDS);
 
     loadedRiggedMeshAttributes = loadedMeshAttributes;
@@ -270,6 +270,7 @@ bool Room3D::loadModels(const char *path, bool force, VertBuffer **vbPtr, const 
         return false;
 
     GltfModelLoader loader(attrs);
+    loader.calculateTangents = false;
 
     if (stringEndsWith(path, ".glb"))
         loader.fromBinaryFile(path);

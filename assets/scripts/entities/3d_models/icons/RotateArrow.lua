@@ -12,6 +12,7 @@ function create(model)
         },
         RenderModelToSpriteSheet {
             yawSteps = 1,
+            baseYaw = 0,
             pitchSteps = 1,
             spriteSize = vec2(1.25, 1.25)   -- meters.
         }
