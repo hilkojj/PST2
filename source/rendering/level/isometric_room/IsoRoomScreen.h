@@ -13,16 +13,6 @@
 
 class IsoRoomScreen : public Screen
 {
-    DebugLineRenderer lineRenderer;
-
-    IsoEntityInspector entityInspector;
-
-    IsoTileMapMeshGenerator tileMapMeshGenerator;
-
-    ShaderAsset tileMapShader;
-
-    OrthographicCamera camera;
-
   public:
 
     IsoRoom *room;
@@ -33,11 +23,29 @@ class IsoRoomScreen : public Screen
 
     void onResize() override;
 
+    ~IsoRoomScreen() override;
+
+  private:
+
     void showTerrainEditor();
 
     void renderDebugStuff(double deltaTime);
 
-    ~IsoRoomScreen() override;
+    bool findHoveredTile(uvec3 &outTilePos, vec3 &outHoverNormal);
+
+    DebugLineRenderer lineRenderer;
+
+    IsoEntityInspector entityInspector;
+
+    IsoTileMapMeshGenerator tileMapMeshGenerator;
+
+    ShaderAsset tileMapShader;
+
+    OrthographicCamera camera;
+
+    bool tileHovered = false;
+    uvec3 hoveredTilePos;
+    vec3 hoveredTileNormal;
 
 };
 

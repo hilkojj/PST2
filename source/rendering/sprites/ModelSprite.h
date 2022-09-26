@@ -16,7 +16,7 @@ class ModelSprite
     {
         struct Frame
         {
-            ivec2 spriteSheetOffset;
+            uvec2 spriteSheetOffset;
         };
 
         std::map<std::string, std::vector<Frame>> animations;
@@ -26,7 +26,7 @@ class ModelSprite
 
     ModelSprite(const RenderModelToSpriteSheet &);
 
-    Orientation &getClosestOrientation(const float yaw, const float pitch);
+    Orientation &getClosestOrientation(float yaw, float pitch);
 
   private:
 

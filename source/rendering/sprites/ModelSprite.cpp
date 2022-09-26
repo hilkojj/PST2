@@ -10,9 +10,13 @@ ModelSprite::ModelSprite(const RenderModelToSpriteSheet &renderProperties) : ren
     }
 }
 
-ModelSprite::Orientation &ModelSprite::getClosestOrientation(const float yaw, const float pitch)
+ModelSprite::Orientation &ModelSprite::getClosestOrientation(float yaw, float pitch)
 {
-    uint yawIndex = uint(round((yaw / 360.0f) * renderProperties.yawSteps)) % renderProperties.yawSteps;
+    if (yaw < 0.0f)
+    {
+        yaw = ceil(-yaw / 360.0f) * 360 + yaw;
+    }
+    uint yawIndex = uint(round((yaw / 360.0f) * float(renderProperties.yawSteps))) % renderProperties.yawSteps;
 
     uint pitchIndex = 0;// todo
 

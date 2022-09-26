@@ -3,7 +3,9 @@
 #define GAME_ISOTILEMAPMESHGENERATOR_H
 
 #include <graphics/3d/mesh.h>
+
 #include <set>
+#include <functional>
 
 class IsoTileMap;
 
@@ -20,6 +22,11 @@ class IsoTileMapMeshGenerator
     uint getNrOfChunksAlongZAxis() const;
 
     const SharedMesh &getMeshForChunk(uint x, uint z) const;
+
+    /**
+     * Calls the callback for each triangle belonging to the tile. If the callback returns false, the loop is stopped.
+     */
+    void loopThroughTileTris(const uvec3 &tilePos, const std::function<bool(const vec3 &a, const vec3 &b, const vec3 &c, const vec3 &normal)> &callback);
 
   private:
 

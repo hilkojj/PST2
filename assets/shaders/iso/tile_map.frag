@@ -9,9 +9,14 @@ flat in vec3 v_normal;
 flat in vec2 v_spriteSheetOffset;
 
 uniform sampler2D spriteSheet;
+uniform vec3 hoveredTilePos;
+uniform vec3 hoveredTileNormal;
 
 void main()
 {
+    bool isHoveredTile = all(greaterThanEqual(v_position, hoveredTilePos))
+        && all(lessThanEqual(v_position, hoveredTilePos + vec3(1.0f, TILE_HEIGHT, 1.0f)));
+
     float light = v_light;
 
     const float gridLightReduction = 0.8f;
@@ -51,4 +56,9 @@ void main()
 
     colorOut = vec4(tileTextureColor * vec3(light), 1.0);
 
+
+    if (isHoveredTile && dot(v_normal, hoveredTileNormal) >= 0.99f)
+    {
+        colorOut.rgb = mix(vec3(1.0f), colorOut.rgb, 0.5f);
+    }
 }

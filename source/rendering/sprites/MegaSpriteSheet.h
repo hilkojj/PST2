@@ -49,7 +49,7 @@ class MegaSpriteSheet
 
     const uint getChunksPerRow() const;
 
-    bool tryReserve(const ivec2 &chunkOffset, const ivec2 &chunkSize);
+    bool tryReserve(const uvec2 &chunkOffset, const uvec2 &chunkSize);
 
 };
 

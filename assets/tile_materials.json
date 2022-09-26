@@ -4,6 +4,7 @@
     "tileset": "sprites/tilesets/grass"
   },
   {
-    "name": "Road"
+    "name": "Road",
+    "tileset": "sprites/tilesets/grass"
   }
 ]

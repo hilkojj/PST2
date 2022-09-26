@@ -75,6 +75,32 @@ const SharedMesh &IsoTileMapMeshGenerator::getMeshForChunk(uint x, uint z) const
     return chunks[x + z * getNrOfChunksAlongZAxis()].mesh;
 }
 
+void IsoTileMapMeshGenerator::loopThroughTileTris(const uvec3 &tilePos, const std::function<bool(const vec3 &a, const vec3 &b, const vec3 &c, const vec3 &normal)> &callback)
+{
+    if (!map->isValidPosition(tilePos.x, tilePos.y, tilePos.z))
+    {
+        return;
+    }
+    // todo, make this function const?
+    Chunk &chunk = getChunkForPosition(tilePos);
+    uvec3 tilePosChunkRelative = tilePos - chunk.offset;
+    Chunk::TrisPerTile &tris = chunk.getTrisPerTile(tilePosChunkRelative.x, tilePosChunkRelative.y, tilePosChunkRelative.z);
+
+    for (int firstTriVertexIndex : tris.indices)
+    {
+        bool continueLoop = callback(
+            chunk.mesh->getRef<vec3>(firstTriVertexIndex, 0),
+            chunk.mesh->getRef<vec3>(firstTriVertexIndex + 1, 0),
+            chunk.mesh->getRef<vec3>(firstTriVertexIndex + 2, 0),
+            chunk.mesh->getRef<vec3>(firstTriVertexIndex + 2, sizeof(vec3)) // normal
+        );
+        if (!continueLoop)
+        {
+            break;
+        }
+    }
+}
+
 #define VERTS_PER_SMALLEST_VERT_BUFFER (IsoTileMap::CHUNK_WIDTH * IsoTileMap::CHUNK_WIDTH * 30 * 2)
 
 IsoTileMapMeshGenerator::Chunk::Chunk(IsoTileMap *map, const uvec3 &offset) : map(map), offset(offset)

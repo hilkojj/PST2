@@ -45,9 +45,16 @@ void IsoRoomScreen::render(double deltaTime)
     showTerrainEditor();
     tileMapMeshGenerator.update();
 
+    tileHovered = findHoveredTile(hoveredTilePos, hoveredTileNormal);
+
     // render triangles without using indices:
     tileMapShader.use();
     glUniformMatrix4fv(tileMapShader.location("mvp"), 1, GL_FALSE, &camera.combined[0][0]);
+
+    vec3 hoveredTilePosFloat = tileHovered ? vec3(hoveredTilePos.x, float(hoveredTilePos.y) * IsoTileMap::TILE_HEIGHT, hoveredTilePos.z) : -vec3(1.0f);
+
+    glUniform3fv(tileMapShader.location("hoveredTilePos"), 1, &hoveredTilePosFloat[0]);
+    glUniform3fv(tileMapShader.location("hoveredTileNormal"), 1, &(tileHovered ? hoveredTileNormal : mu::X)[0]);
     Game::spriteSheet->fbo->colorTexture->bind(0, tileMapShader, "spriteSheet");
     for (uint chunkX = 0; chunkX < tileMapMeshGenerator.getNrOfChunksAlongXAxis(); chunkX++)
     {
@@ -119,7 +126,7 @@ void IsoRoomScreen::showTerrainEditor()
             {
                 const SharedModelSprite &modelSprite = Game::spriteSheet->getModelSpriteByName(name);
                 float yaw = float(rotation) * -90.0f;
-                yaw -= atan2(camera.direction.z, camera.direction.x) * mu::RAD_TO_DEGREES;
+                yaw -= float(atan2(camera.direction.z, camera.direction.x)) * mu::RAD_TO_DEGREES;
                 const ModelSprite::Orientation &orientation = modelSprite->getClosestOrientation(yaw, 0);
                 if (UIScreenWidgets::modelSpriteImageButton(name, modelSprite, orientation, shape == btnShape))
                 {
@@ -176,16 +183,20 @@ void IsoRoomScreen::showTerrainEditor()
         ImGui::PopStyleColor();
 
         ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(0, 100, 255, 100));
-        ImGui::BeginChild("Material", ImVec2(-1, 80), true, ImGuiWindowFlags_None);
+        ImGui::BeginChild("Material", ImVec2(-1, 90), true, ImGuiWindowFlags_None);
         {
             ImGui::Text("Material:");
 
             for (uint matIndex = 0u; matIndex < IsoTileMap::getNumOfMaterials(); matIndex++)
             {
                 const IsoTileMaterial &previewMaterial = IsoTileMap::getMaterial(matIndex);
-                if (ImGui::Button(previewMaterial.name.c_str()))
+                if (UIScreenWidgets::asepriteImageButton(std::string(previewMaterial.name + "_TileEditorBtn").c_str(), previewMaterial.tileset, 0u, material == matIndex, false, 0.6f))
                 {
                     material = matIndex;
+                }
+                if (ImGui::IsItemHovered())
+                {
+                    ImGui::SetTooltip("%s", previewMaterial.name.c_str());
                 }
                 ImGui::SameLine();
             }
@@ -194,15 +205,15 @@ void IsoRoomScreen::showTerrainEditor()
         ImGui::EndChild();
         ImGui::PopStyleColor();
 
-        ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(0, 100, 255, 100));
-        ImGui::BeginChild("Layer", ImVec2(-1, 80), true, ImGuiWindowFlags_None);
+        //ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(0, 100, 255, 100));
+        ImGui::BeginChild("Layer", ImVec2(-1, 65), true, ImGuiWindowFlags_None);
         {
             ImGui::Text("Tile layer:");
             static const uint step = 1;
             ImGui::InputScalar("", ImGuiDataType_U32, &yLevel, &step, &step, "%u");
         }
         ImGui::EndChild();
-        ImGui::PopStyleColor();
+        //ImGui::PopStyleColor();
     }
     ImGui::End();
 
@@ -256,12 +267,79 @@ void IsoRoomScreen::showTerrainEditor()
 
             if (MouseInput::justPressed(GLFW_MOUSE_BUTTON_LEFT))
             {
-                map.setTile(tilePos.x, tilePos.y, tilePos.z, { shape, rotation });
+                map.setTile(tilePos.x, tilePos.y, tilePos.z, { shape, rotation, material });
             }
             else if (MouseInput::justPressed(GLFW_MOUSE_BUTTON_RIGHT))
             {
-                map.setTile(tilePos.x, tilePos.y, tilePos.z, { IsoTileShape::empty, 0u });
+                map.setTile(tilePos.x, tilePos.y, tilePos.z, { IsoTileShape::empty, 0u, 0u });
             }
         }
     }
+}
+
+bool IsoRoomScreen::findHoveredTile(uvec3 &outTilePos, vec3 &outHoverNormal)
+{
+    vec2 mouseRelativeToCenter(
+            MouseInput::mouseX / gu::width,
+            MouseInput::mouseY / gu::height
+    );
+    mouseRelativeToCenter *= 2.0f;
+    mouseRelativeToCenter -= 1.0f;
+    mouseRelativeToCenter.y *= -1.0f;
+
+    vec3 rayOrigin = camera.position;
+    rayOrigin -= camera.right * camera.viewportWidth * 0.5f;
+    rayOrigin += camera.right * float(MouseInput::mouseX / gu::widthPixels) * camera.viewportWidth;
+
+    rayOrigin += camera.up * camera.viewportHeight * 0.5f;
+    rayOrigin -= camera.up * float(MouseInput::mouseY / gu::heightPixels) * camera.viewportHeight;
+
+    rayOrigin.y /= IsoTileMap::TILE_HEIGHT;
+
+    vec3 rayDirection = camera.direction;
+    rayDirection.y /= IsoTileMap::TILE_HEIGHT;
+    rayDirection = normalize(rayDirection);
+
+    bool rayHit = false;
+
+    mu::fastVoxelTraversal(rayOrigin, rayDirection, room->getTileMap().size, [&](const uvec3 &pos) -> bool
+    {
+        /*
+        if (MouseInput::justPressed(GLFW_MOUSE_BUTTON_LEFT))
+        {
+            room->getTileMap().setTile(pos.x, pos.y, pos.z, { IsoTileShape::full, 0u, 0u });
+
+            return true;
+        }
+        */
+
+        const IsoTile &tile = room->getTileMap().getTile(pos.x, pos.y, pos.z);
+        if (tile.shape == IsoTileShape::empty)
+        {
+            return true;
+        }
+
+        tileMapMeshGenerator.loopThroughTileTris(pos, [&](const vec3 &a, const vec3 &b, const vec3 &c, const vec3 &normal) -> bool
+        {
+            vec3 projectedA = camera.project(a);
+            vec3 projectedB = camera.project(b);
+            vec3 projectedC = camera.project(c);
+
+            if (!mu::isTriangleClockwise(projectedA, projectedB, projectedC))
+            {
+                return true;
+            }
+
+            if (mu::pointInTriangle(mouseRelativeToCenter, projectedA, projectedB, projectedC))
+            {
+                outTilePos = pos;
+                outHoverNormal = normal;
+                rayHit = true;
+                return false;
+            }
+            return true;
+        });
+        return !rayHit;
+    });
+    return rayHit;
 }

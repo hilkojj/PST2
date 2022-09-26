@@ -20,7 +20,7 @@ void MegaSpriteSheet::add(const aseprite::Sprite &sprite)
 
     fbo->colorTexture->bind(0);
 
-    ivec2 chunkSize(
+    uvec2 chunkSize(
         ceil(vec2(sprite.width, sprite.height) / float(CHUNK_SIZE))
     );
 
@@ -56,7 +56,7 @@ void MegaSpriteSheet::add(const aseprite::Sprite &sprite)
     subSheets[&sprite] = subSheet;
 }
 
-bool MegaSpriteSheet::tryReserve(const ivec2 &chunkOffset, const ivec2 &chunkSize)
+bool MegaSpriteSheet::tryReserve(const uvec2 &chunkOffset, const uvec2 &chunkSize)
 {
     for (int x = chunkOffset.x; x < chunkOffset.x + chunkSize.x; x++)
         for (int y = chunkOffset.y; y <= chunkOffset.y + chunkSize.y; y++)
