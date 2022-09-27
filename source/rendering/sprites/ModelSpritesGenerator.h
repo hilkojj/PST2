@@ -1,10 +1,10 @@
-#ifndef GAME_ISOMETRICSPRITESGENERATOR_H
-#define GAME_ISOMETRICSPRITESGENERATOR_H
+#ifndef GAME_MODELSPRITESGENERATOR_H
+#define GAME_MODELSPRITESGENERATOR_H
 
 #include "../../level/room3d/Room3D.h"
 #include "../level/room3d/Room3DRenderer.h"
 
-class IsometricSpritesGenerator
+class ModelSpritesGenerator
 {
 
     Room3D room3D;
@@ -17,7 +17,7 @@ class IsometricSpritesGenerator
 
     std::string currentlyLoading;
 
-    IsometricSpritesGenerator();
+    ModelSpritesGenerator();
 
     /*
      * returns progress
@@ -25,4 +25,4 @@ class IsometricSpritesGenerator
     float generate();
 };
 
-#endif //GAME_ISOMETRICSPRITESGENERATOR_H
+#endif //GAME_MODELSPRITESGENERATOR_H

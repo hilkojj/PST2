@@ -51,7 +51,7 @@ void GameScreen::render(double deltaTime)
             if (!spritesGenerator)
             {
                 justConstructedGenerator = true;
-                spritesGenerator = new IsometricSpritesGenerator;
+                spritesGenerator = new ModelSpritesGenerator;
             }
             ImGui::SetNextWindowPos(ImVec2(gu::widthPixels * 0.5f, gu::heightPixels * 0.5f), justResized ? ImGuiCond_Always : ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
             ImGui::SetNextWindowSize(ImVec2(300.0f, -1.0f), ImGuiCond_Appearing);

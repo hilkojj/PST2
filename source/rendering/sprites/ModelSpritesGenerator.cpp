@@ -1,10 +1,10 @@
 
-#include "IsometricSpritesGenerator.h"
+#include "ModelSpritesGenerator.h"
 #include <graphics/orthographic_camera.h>
 #include "../../generated/Model.hpp"
 #include "../../game/Game.h"
 
-IsometricSpritesGenerator::IsometricSpritesGenerator()
+ModelSpritesGenerator::ModelSpritesGenerator()
 : renderer(&room3D),
   defaultShader(
           "default shader",
@@ -21,7 +21,7 @@ IsometricSpritesGenerator::IsometricSpritesGenerator()
     totalNumEntities = entitiesToRender.size();
 }
 
-float IsometricSpritesGenerator::generate()
+float ModelSpritesGenerator::generate()
 {
     if (entitiesToRender.empty())
     {
@@ -40,8 +40,8 @@ float IsometricSpritesGenerator::generate()
         auto modelSprite = std::make_shared<ModelSprite>(*renderToSpriteSheet);
 
         OrthographicCamera cam(
-            0.1f,
-            1000.0f,
+            0.0f,
+            Game::settings.graphics.cameraDepth,
             renderToSpriteSheet->spriteSize.x,
             renderToSpriteSheet->spriteSize.y
         );
@@ -53,7 +53,7 @@ float IsometricSpritesGenerator::generate()
                 float yaw = 360.0f * (float(yawStep) / float(renderToSpriteSheet->yawSteps)) + renderToSpriteSheet->baseYaw;
                 float pitch = 0.0f;// mix(renderToSpriteSheet->pitchMin, renderToSpriteSheet->pitchMax, float(pitchStep) / float(renderToSpriteSheet->pitchSteps));
 
-                cam.position = vec3(renderToSpriteSheet->cameraDistance, 0.0f, 0.0f);
+                cam.position = vec3(Game::settings.graphics.cameraDepth * 0.5f, 0.0f, 0.0f);
                 cam.position = rotate(cam.position, Game::settings.graphics.isometricAngle * mu::DEGREES_TO_RAD, mu::Z);
                 cam.position = rotate(cam.position, yaw * mu::DEGREES_TO_RAD, mu::Y);
 

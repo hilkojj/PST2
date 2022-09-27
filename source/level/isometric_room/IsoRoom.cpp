@@ -50,6 +50,7 @@ void IsoRoom::initializeLuaEnvironment()
     luaEnvironment["getTime"] = [&] {
         return getLevel().getTime();
     };
+    luaEnvironment["tileMapSize"] = tileMap->size;
 }
 
 void IsoRoom::toJson(json &j)

@@ -9,7 +9,7 @@
 IsoRoomScreen::IsoRoomScreen(IsoRoom *room)
   : room(room),
     entityInspector(*room, "IsoRoom"),
-    camera(0.1f, 1000.f, 0.0f, 0.0f),
+    camera(0.0f, Game::settings.graphics.cameraDepth, 0.0f, 0.0f),
     tileMapMeshGenerator(&room->getTileMap()),
     tileMapShader("tileMapShader", "shaders/iso/tile_map.vert", "shaders/iso/tile_map.frag")
 {
@@ -40,6 +40,9 @@ void IsoRoomScreen::render(double deltaTime)
     camera.position.z += room->cameraFocus.z;
     camera.update();
     lineRenderer.projection = camera.combined;
+
+    // render sprites:
+    renderModelSprites();
 
     // update terrain mesh:
     showTerrainEditor();
@@ -107,6 +110,18 @@ void IsoRoomScreen::renderDebugStuff(double deltaTime)
 IsoRoomScreen::~IsoRoomScreen()
 {
 
+}
+
+void IsoRoomScreen::renderModelSprites()
+{
+    gu::profiler::Zone zone("Render model sprites");
+
+    room->entities.view<Transform, ModelSpriteView>().each([&](const Transform &transform, const ModelSpriteView &view) {
+
+        modelSpriteRenderer.add(view, transform, camera);
+    });
+
+    modelSpriteRenderer.render(camera);
 }
 
 void IsoRoomScreen::showTerrainEditor()

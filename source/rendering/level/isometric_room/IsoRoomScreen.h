@@ -4,6 +4,7 @@
 
 #include "IsoTileMapMeshGenerator.h"
 #include "IsoEntityInspector.h"
+#include "../../sprites/ModelSpriteRenderer.h"
 #include "../../../level/isometric_room/IsoRoom.h"
 
 #include <graphics/orthographic_camera.h>
@@ -27,6 +28,8 @@ class IsoRoomScreen : public Screen
 
   private:
 
+    void renderModelSprites();
+
     void showTerrainEditor();
 
     void renderDebugStuff(double deltaTime);
@@ -34,6 +37,7 @@ class IsoRoomScreen : public Screen
     bool findHoveredTile(uvec3 &outTilePos, vec3 &outHoverNormal);
 
     DebugLineRenderer lineRenderer;
+    ModelSpriteRenderer modelSpriteRenderer;
 
     IsoEntityInspector entityInspector;
 

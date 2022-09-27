@@ -11,7 +11,7 @@ function create(model)
             modelName = "Banana"
         },
         RenderModelToSpriteSheet {
-            yawSteps = 8,
+            yawSteps = 24,
             pitchSteps = 1,
             pitchMin = -45,
             pitchMax = 45,

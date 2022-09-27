@@ -4,13 +4,13 @@
 
 #include <gu/screen.h>
 #include "level/LevelScreen.h"
-#include "sprites/IsometricSpritesGenerator.h"
+#include "sprites/ModelSpritesGenerator.h"
 
 class GameScreen : public Screen
 {
     LevelScreen *lvlScreen = NULL;
 
-    IsometricSpritesGenerator *spritesGenerator = NULL;
+    ModelSpritesGenerator *spritesGenerator = NULL;
 
     delegate_method onSessionChange, onNewLevel;
 

@@ -1,6 +1,6 @@
 
-#ifndef GAME_SPRITERENDERER_H
-#define GAME_SPRITERENDERER_H
+#ifndef GAME_ASEPRITERENDERER_H
+#define GAME_ASEPRITERENDERER_H
 
 
 #include <graphics/3d/mesh.h>
@@ -12,7 +12,7 @@
 /**
  * Used to render all entities with a AsepriteView component.
  */
-class SpriteRenderer
+class AsepriteRenderer
 {
     SharedMesh quad;
     VertData instancedData;
@@ -21,7 +21,7 @@ class SpriteRenderer
     ShaderAsset shader;
 
   public:
-    SpriteRenderer();
+    AsepriteRenderer();
 
     void add(const AsepriteView &, const ivec2 &position);
 

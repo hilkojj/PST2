@@ -8,7 +8,13 @@ MegaSpriteSheet::MegaSpriteSheet() : size(Game::settings.graphics.megaSpriteShee
     used.resize(getChunksPerRow() * getChunksPerRow());
     fbo = new FrameBuffer(size, size);
     fbo->addColorTexture(GL_RGBA8, GL_RGBA, GL_NEAREST, GL_NEAREST, GL_UNSIGNED_BYTE);
-    fbo->addDepthBuffer();
+    fbo->addDepthTexture(GL_NEAREST, GL_NEAREST);
+
+    fbo->bind();
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    fbo->unbind();
+
 }
 
 void MegaSpriteSheet::add(const aseprite::Sprite &sprite)

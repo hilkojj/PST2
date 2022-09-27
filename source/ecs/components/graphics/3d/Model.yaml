@@ -16,7 +16,6 @@ RenderModelToSpriteSheet:
   pitchSteps: [uint, 0u]
   pitchMin: [float, -45.0f]
   pitchMax: [float, 45.0f]
-  cameraDistance: [float, 100.0f]
   spriteSize: [vec2, vec2(2.0f)]
 
   showGrid: [bool, false]

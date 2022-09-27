@@ -270,7 +270,7 @@ bool Room3D::loadModels(const char *path, bool force, VertBuffer **vbPtr, const 
         return false;
 
     GltfModelLoader loader(attrs);
-    loader.calculateTangents = false;
+    loader.calculateTangents = GltfModelLoader::IF_NOT_PROVIDED;
 
     if (stringEndsWith(path, ".glb"))
         loader.fromBinaryFile(path);

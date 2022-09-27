@@ -8,7 +8,7 @@
 #include <ecs/EntityEngine.h>
 #include <graphics/3d/debug_line_renderer.h>
 #include <ecs/EntityInspector.h>
-#include "../sprites/SpriteRenderer.h"
+#include "../sprites/AsepriteRenderer.h"
 
 class UIScreen : public EntityEngine, public Screen
 {

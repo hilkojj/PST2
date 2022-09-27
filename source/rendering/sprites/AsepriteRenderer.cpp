@@ -1,9 +1,11 @@
 
-#include "SpriteRenderer.h"
+#include "AsepriteRenderer.h"
+
 #include "../../game/Game.h"
+
 #include <graphics/3d/vert_buffer.h>
 
-SpriteRenderer::SpriteRenderer()
+AsepriteRenderer::AsepriteRenderer()
     :
     shader("sprite shader", "shaders/sprite.vert", "shaders/sprite.frag"),
     instancedData(
@@ -32,7 +34,7 @@ SpriteRenderer::SpriteRenderer()
     quad->vertBuffer->vboUsage = GL_DYNAMIC_DRAW;
 }
 
-void SpriteRenderer::add(const AsepriteView &view, const ivec2 &position)
+void AsepriteRenderer::add(const AsepriteView &view, const ivec2 &position)
 {
     ivec2 frameOffset = Game::spriteSheet->spriteInfo(view.sprite.get()).frameOffsets.at(view.frame);
 
@@ -69,7 +71,7 @@ void SpriteRenderer::add(const AsepriteView &view, const ivec2 &position)
     instancedData.set<ivec2>(view.clip.topRight, i, attrOffset);
 }
 
-void SpriteRenderer::render(const Camera &cam)
+void AsepriteRenderer::render(const Camera &cam)
 {
     gu::profiler::Zone z2("sprite draw calls");
 

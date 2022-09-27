@@ -11,6 +11,7 @@ GraphicsSettings @not_a_component @json_with_keys:
   megaSpriteSheetSize: [uint, 2048] # https://feedback.wildfiregames.com/report/opengl/feature/GL_MAX_TEXTURE_SIZE
   isometricAngle: [float, 30.0f]
   pixelsPerMeter: [uint, 24u]
+  cameraDepth: [float, 1000.0f]
 
 KeyInputSettings @not_a_component @json_with_keys:
   moveCameraUp: [KeyInput::Key, GLFW_KEY_W]
