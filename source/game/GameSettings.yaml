@@ -21,6 +21,7 @@ KeyInputSettings @not_a_component @json_with_keys:
   moveCameraSpeed: [float, 2.0f]
   rotateCameraLeft: [KeyInput::Key, GLFW_KEY_LEFT]
   rotateCameraRight: [KeyInput::Key, GLFW_KEY_RIGHT]
+  cancel: [KeyInput::Key, GLFW_KEY_ESCAPE]
 
   flyCamera: [KeyInput::Key, GLFW_KEY_F]
   stopFlyingCamera: [KeyInput::Key, GLFW_KEY_ESCAPE]

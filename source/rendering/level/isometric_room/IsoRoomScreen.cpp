@@ -58,6 +58,12 @@ void IsoRoomScreen::render(double deltaTime)
 
     glUniform3fv(tileMapShader.location("hoveredTilePos"), 1, &hoveredTilePosFloat[0]);
     glUniform3fv(tileMapShader.location("hoveredTileNormal"), 1, &(tileHovered ? hoveredTileNormal : mu::X)[0]);
+
+    glUniform3fv(tileMapShader.location("previewFrom"), 1, &placingTilesPreviewFrom[0]);
+    glUniform3fv(tileMapShader.location("previewTo"), 1, &placingTilesPreviewTo[0]);
+
+    glUniform1f(tileMapShader.location("time"), float(room->getLevel().getTime()));
+
     Game::spriteSheet->fbo->colorTexture->bind(0, tileMapShader, "spriteSheet");
     for (uint chunkX = 0; chunkX < tileMapMeshGenerator.getNrOfChunksAlongXAxis(); chunkX++)
     {
@@ -127,7 +133,6 @@ void IsoRoomScreen::renderModelSprites()
 void IsoRoomScreen::showTerrainEditor()
 {
     static IsoTileShape shape = IsoTileShape::full;
-    static uint yLevel = 0u;
     static uint rotation = 0u;
     static uint material = 0u;
 
@@ -219,75 +224,132 @@ void IsoRoomScreen::showTerrainEditor()
         }
         ImGui::EndChild();
         ImGui::PopStyleColor();
-
-        //ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(0, 100, 255, 100));
-        ImGui::BeginChild("Layer", ImVec2(-1, 65), true, ImGuiWindowFlags_None);
-        {
-            ImGui::Text("Tile layer:");
-            static const uint step = 1;
-            ImGui::InputScalar("", ImGuiDataType_U32, &yLevel, &step, &step, "%u");
-        }
-        ImGui::EndChild();
-        //ImGui::PopStyleColor();
     }
     ImGui::End();
-
-    if (MouseInput::yScroll > 0.0)
-    {
-        yLevel++;
-    }
-    if (MouseInput::yScroll < 0.0 && yLevel > 0u)
-    {
-        yLevel--;
-    }
-    if (yLevel >= room->getTileMap().size.y)
-    {
-        yLevel = 0u;
-    }
 
     if (gu::widthPixels == 0 || gu::heightPixels == 0 || camera.direction.y == 0.0f)
     {
         return;
     }
 
-    vec3 cursorPos3d = camera.position;
-    cursorPos3d -= camera.right * camera.viewportWidth * 0.5f;
-    cursorPos3d += camera.right * float(MouseInput::mouseX / gu::widthPixels) * camera.viewportWidth;
-
-    cursorPos3d += camera.up * camera.viewportHeight * 0.5f;
-    cursorPos3d -= camera.up * float(MouseInput::mouseY / gu::heightPixels) * camera.viewportHeight;
-
-    float deltaY = cursorPos3d.y - float(yLevel) * IsoTileMap::TILE_HEIGHT;
-    vec3 ray = camera.direction;
-    ray *= -1.0 / ray.y;
-
-    cursorPos3d += ray * deltaY;
-
-    if (mu::allGreaterOrEqualTo(cursorPos3d, 0.0))
+    if (startedPlacingTiles)
     {
-        uvec3 tilePos = uvec3(cursorPos3d.x, cursorPos3d.y / IsoTileMap::TILE_HEIGHT, cursorPos3d.z);
-
-        auto &map = room->getTileMap();
-        if (map.isValidPosition(tilePos.x, tilePos.y, tilePos.z))
+        bool canceled = KeyInput::justPressed(Game::settings.keyInput.cancel);
+        if (!MouseInput::pressed(placingTilesWith) || canceled)
         {
-            lineRenderer.square(
-                vec3(tilePos.x, tilePos.y * IsoTileMap::TILE_HEIGHT, tilePos.z),
-                1.0f, mu::ONE_3, mu::X, mu::Z
-            );
+            startedPlacingTiles = false;
+        }
 
-            const IsoTile &currentTile = map.getTile(tilePos.x, tilePos.y, tilePos.z);
-            const IsoTileMaterial &tileMaterial = IsoTileMap::getMaterial(currentTile.material);
+        vec3 cursorPos3d = camera.position;
+        cursorPos3d -= camera.right * camera.viewportWidth * 0.5f;
+        cursorPos3d += camera.right * float(MouseInput::mouseX / gu::widthPixels) * camera.viewportWidth;
 
-            ImGui::SetTooltip("%hhu %s", currentTile.shape, tileMaterial.name.c_str());
+        cursorPos3d += camera.up * camera.viewportHeight * 0.5f;
+        cursorPos3d -= camera.up * float(MouseInput::mouseY / gu::heightPixels) * camera.viewportHeight;
 
-            if (MouseInput::justPressed(GLFW_MOUSE_BUTTON_LEFT))
+        float floorHeight = float(startPlacingTilesFrom.y + (placingTilesWith == GLFW_MOUSE_BUTTON_RIGHT ? 1u : 0u)) * IsoTileMap::TILE_HEIGHT;
+        float deltaY = cursorPos3d.y - floorHeight;
+        vec3 ray = camera.direction;
+        ray *= -1.0 / ray.y;
+
+        cursorPos3d += ray * deltaY;
+
+        if (mu::allGreaterOrEqualTo(cursorPos3d, 0.0))
+        {
+            uvec3 tilePos = uvec3(cursorPos3d.x, cursorPos3d.y / IsoTileMap::TILE_HEIGHT, cursorPos3d.z);
+
+            if (tileHovered && hoveredTileNormal.y == 0.0f)
             {
-                map.setTile(tilePos.x, tilePos.y, tilePos.z, { shape, rotation, material });
+                if ((placingTilesWith == GLFW_MOUSE_BUTTON_LEFT && startPlacingTilesFrom == getAdjacentTileToHoveredTile())
+                    || (placingTilesWith == GLFW_MOUSE_BUTTON_RIGHT && startPlacingTilesFrom == hoveredTilePos))
+                {
+                    tilePos = startPlacingTilesFrom;
+                }
             }
-            else if (MouseInput::justPressed(GLFW_MOUSE_BUTTON_RIGHT))
+
+            auto &map = room->getTileMap();
+            if (map.isValidPosition(tilePos.x, tilePos.y, tilePos.z))
             {
-                map.setTile(tilePos.x, tilePos.y, tilePos.z, { IsoTileShape::empty, 0u, 0u });
+                uint minX = min(tilePos.x, startPlacingTilesFrom.x);
+                uint minZ = min(tilePos.z, startPlacingTilesFrom.z);
+                uint maxX = max(tilePos.x, startPlacingTilesFrom.x);
+                uint maxZ = max(tilePos.z, startPlacingTilesFrom.z);
+
+                lineRenderer.line(
+                    vec3(minX, floorHeight, minZ),
+                    vec3(maxX + 1u, floorHeight, minZ),
+                    mu::ONE_3
+                );
+                lineRenderer.line(
+                    vec3(minX, floorHeight, maxZ + 1u),
+                    vec3(maxX + 1u, floorHeight, maxZ + 1u),
+                    mu::ONE_3
+                );
+
+                lineRenderer.line(
+                    vec3(maxX + 1u, floorHeight, minZ),
+                    vec3(maxX + 1u, floorHeight, maxZ + 1u),
+                    mu::ONE_3
+                );
+                lineRenderer.line(
+                    vec3(minX, floorHeight, minZ),
+                    vec3(minX, floorHeight, maxZ + 1u),
+                    mu::ONE_3
+                );
+
+                const IsoTile tileToPlace {
+                    shape,
+                    rotation,
+                    material
+                };
+
+                if (!startedPlacingTiles)
+                {
+                    if (!canceled)
+                    {
+                        for (uint x = minX; x <= maxX; x++)
+                        {
+                            for (uint z = minZ; z <= maxZ; z++)
+                            {
+                                map.setTile(x, startPlacingTilesFrom.y, z, tileToPlace);
+                            }
+                        }
+                    }
+                    tileMapMeshGenerator.setPreviewTiles(nullptr, uvec3(), uvec3());
+                    placingTilesPreviewFrom = placingTilesPreviewTo = vec3(-1.0f);
+                }
+                else
+                {
+                    tileMapMeshGenerator.setPreviewTiles(
+                        &tileToPlace,
+                        uvec3(minX, startPlacingTilesFrom.y, minZ),
+                        uvec3(maxX, startPlacingTilesFrom.y, maxZ)
+                    );
+                    placingTilesPreviewFrom = vec3(minX, float(startPlacingTilesFrom.y) * IsoTileMap::TILE_HEIGHT, minZ);
+                    placingTilesPreviewTo = vec3(float(maxX) + 1.0f, float(startPlacingTilesFrom.y + 1u) * IsoTileMap::TILE_HEIGHT, float(maxZ) + 1.0f);
+                }
             }
+        }
+    }
+    else if (tileHovered)   // TODO: this is one frame outdated
+    {
+        if (MouseInput::justPressed(GLFW_MOUSE_BUTTON_LEFT))
+        {
+            placingTilesWith = GLFW_MOUSE_BUTTON_LEFT;
+            startedPlacingTiles = true;
+
+            // start placing adjacent to hovered tile:
+            startPlacingTilesFrom = getAdjacentTileToHoveredTile();
+            hoverNormalAtStart = hoveredTileNormal;
+        }
+        else if (MouseInput::justPressed(GLFW_MOUSE_BUTTON_RIGHT))
+        {
+            placingTilesWith = GLFW_MOUSE_BUTTON_RIGHT;
+            startedPlacingTiles = true;
+
+            // start placing tiles at the hovered position:
+            startPlacingTilesFrom = hoveredTilePos;
+            hoverNormalAtStart = hoveredTileNormal;
         }
     }
 }
@@ -357,4 +419,31 @@ bool IsoRoomScreen::findHoveredTile(uvec3 &outTilePos, vec3 &outHoverNormal)
         return !rayHit;
     });
     return rayHit;
+}
+
+uvec3 IsoRoomScreen::getAdjacentTileToHoveredTile() const
+{
+    uvec3 adj = hoveredTilePos;
+
+    if (hoveredTileNormal.y > 0.0f) // Y first, because of slopes.
+    {
+        adj.y++;
+    }
+    else if (hoveredTileNormal.x < 0.0f)
+    {
+        adj.x--;
+    }
+    else if (hoveredTileNormal.x > 0.0f)
+    {
+        adj.x++;
+    }
+    else if (hoveredTileNormal.z < 0.0f)
+    {
+        adj.z--;
+    }
+    else if (hoveredTileNormal.z > 0.0f)
+    {
+        adj.z++;
+    }
+    return adj;
 }

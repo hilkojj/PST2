@@ -36,6 +36,8 @@ class IsoRoomScreen : public Screen
 
     bool findHoveredTile(uvec3 &outTilePos, vec3 &outHoverNormal);
 
+    uvec3 getAdjacentTileToHoveredTile() const;
+
     DebugLineRenderer lineRenderer;
     ModelSpriteRenderer modelSpriteRenderer;
 
@@ -50,6 +52,14 @@ class IsoRoomScreen : public Screen
     bool tileHovered = false;
     uvec3 hoveredTilePos;
     vec3 hoveredTileNormal;
+
+    bool startedPlacingTiles = false;
+    int placingTilesWith = GLFW_MOUSE_BUTTON_LEFT;
+    uvec3 startPlacingTilesFrom;
+    vec3 hoverNormalAtStart;
+
+    vec3 placingTilesPreviewFrom;
+    vec3 placingTilesPreviewTo;
 
 };
 

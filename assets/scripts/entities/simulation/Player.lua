@@ -8,7 +8,7 @@ function create(player)
         trans.position.x = math.random() * currentRoom.tileMapSize.x
         trans.position.y = 1
         trans.position.z = math.random() * currentRoom.tileMapSize.z
-        component.DespawnAfter.getFor(banana).time = 60
+        component.DespawnAfter.getFor(banana).time = 5
 
     end)
 end

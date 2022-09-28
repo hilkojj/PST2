@@ -24,6 +24,16 @@ struct IsoTile
     IsoTileShape shape;
     uint rotation : 2;
     uint material : 6;
+
+    inline bool operator==(const IsoTile &other) const
+    {
+        return shape == other.shape && rotation == other.rotation && material == other.material;
+    }
+
+    inline bool operator!=(const IsoTile &other) const
+    {
+        return !operator==(other);
+    }
 };
 
 void to_json(json &, const IsoTile &);

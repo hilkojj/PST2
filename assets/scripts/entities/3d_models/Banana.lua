@@ -5,7 +5,6 @@ function create(model)
 
     setComponents(model, {
         Transform {
-            scale = vec3(1)
         },
         RenderModel {
             modelName = "Banana"

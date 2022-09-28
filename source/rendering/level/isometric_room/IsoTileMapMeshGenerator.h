@@ -2,12 +2,12 @@
 #ifndef GAME_ISOTILEMAPMESHGENERATOR_H
 #define GAME_ISOTILEMAPMESHGENERATOR_H
 
+#include "../../../level/isometric_room/IsoTileMap.h"
+
 #include <graphics/3d/mesh.h>
 
 #include <set>
 #include <functional>
-
-class IsoTileMap;
 
 class IsoTileMapMeshGenerator
 {
@@ -28,7 +28,11 @@ class IsoTileMapMeshGenerator
      */
     void loopThroughTileTris(const uvec3 &tilePos, const std::function<bool(const vec3 &a, const vec3 &b, const vec3 &c, const vec3 &normal)> &callback);
 
+    void setPreviewTiles(const IsoTile *inPreviewTile, const uvec3 &inPreviewFrom, const uvec3 &inPreviewTo);
+
   private:
+
+    void undirt();
 
     struct Chunk
     {
@@ -37,7 +41,7 @@ class IsoTileMapMeshGenerator
             std::set<uint> indices; // indices of the first vertex of each triangle.
         };
 
-        Chunk(IsoTileMap *, const uvec3 &offset);
+        Chunk(IsoTileMapMeshGenerator *, IsoTileMap *, const uvec3 &offset);
 
         void update(const uvec3 &from, const uvec3 &to);
 
@@ -55,6 +59,7 @@ class IsoTileMapMeshGenerator
 
         void rotateTri(const uvec3 &tile, vec3 &a, vec3 &b, vec3 &c, uint8 rotation) const;
 
+        IsoTileMapMeshGenerator *generator;
         IsoTileMap *map;
 
         const uvec3 offset;
@@ -70,11 +75,16 @@ class IsoTileMapMeshGenerator
         std::vector<uvec3> tilePerTri;  // stores for each triangle (NOT vertex) in the mesh, to which tile it belongs
     };
 
-    IsoTileMap *map;
-    std::vector<Chunk> chunks;
+    friend Chunk;
 
     Chunk &getChunkForPosition(const uvec3 &);
 
+    IsoTileMap *map;
+    std::vector<Chunk> chunks;
+
+    bool showPreviewTiles = false;
+    IsoTile previewTile;
+    uvec3 previewFrom = uvec3(0u), previewTo = uvec3(0u);
 };
 
 

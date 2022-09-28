@@ -12,10 +12,18 @@ uniform sampler2D spriteSheet;
 uniform vec3 hoveredTilePos;
 uniform vec3 hoveredTileNormal;
 
+uniform vec3 previewFrom;
+uniform vec3 previewTo;
+
+uniform float time;
+
 void main()
 {
     bool isHoveredTile = all(greaterThanEqual(v_position, hoveredTilePos))
         && all(lessThanEqual(v_position, hoveredTilePos + vec3(1.0f, TILE_HEIGHT, 1.0f)));
+
+    bool isPreview = all(greaterThanEqual(v_position, previewFrom))
+        && all(lessThanEqual(v_position, previewTo));
 
     float light = v_light;
 
@@ -60,5 +68,9 @@ void main()
     if (isHoveredTile && dot(v_normal, hoveredTileNormal) >= 0.99f)
     {
         colorOut.rgb = mix(vec3(1.0f), colorOut.rgb, 0.5f);
+    }
+    if (isPreview)
+    {
+        colorOut.rgb = mix(colorOut.rgb, vec3(0.5f, 1.0f, 0.5f), (sin(time * 4.0f) * 0.5f + 0.5f) * 0.3f);
     }
 }

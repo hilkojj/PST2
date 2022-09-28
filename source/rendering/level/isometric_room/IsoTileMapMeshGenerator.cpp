@@ -14,7 +14,7 @@ IsoTileMapMeshGenerator::IsoTileMapMeshGenerator(IsoTileMap *map) : map(map)
     {
         for (int x = 0; x < getNrOfChunksAlongXAxis(); x++)
         {
-            chunks.emplace_back(map, uvec3(x * IsoTileMap::CHUNK_WIDTH, 0u, z * IsoTileMap::CHUNK_WIDTH));
+            chunks.emplace_back(this, map, uvec3(x * IsoTileMap::CHUNK_WIDTH, 0u, z * IsoTileMap::CHUNK_WIDTH));
             chunks.back().update(
                 chunks.back().offset,
                 chunks.back().offset + uvec3(IsoTileMap::CHUNK_WIDTH - 1u, map->size.y - 1u, IsoTileMap::CHUNK_WIDTH - 1u)
@@ -43,13 +43,7 @@ void IsoTileMapMeshGenerator::update()
             }
         }
     }
-    for (auto &chunk : chunks)
-    {
-        if (chunk.dirtyMesh)
-        {
-            chunk.uploadMesh();
-        }
-    }
+    undirt();
 }
 
 IsoTileMapMeshGenerator::Chunk &IsoTileMapMeshGenerator::getChunkForPosition(const uvec3 &pos)
@@ -101,9 +95,57 @@ void IsoTileMapMeshGenerator::loopThroughTileTris(const uvec3 &tilePos, const st
     }
 }
 
+void IsoTileMapMeshGenerator::setPreviewTiles(const IsoTile *inPreviewTile, const uvec3 &inPreviewFrom, const uvec3 &inPreviewTo)
+{
+    uvec3 updatePreviewFrom(min(inPreviewFrom.x, previewFrom.x), min(inPreviewFrom.y, previewFrom.y), min(inPreviewFrom.z, previewFrom.z));
+    uvec3 updatePreviewTo(max(inPreviewTo.x, previewTo.x), max(inPreviewTo.y, previewTo.y), max(inPreviewTo.z, previewTo.z));
+    if (!inPreviewTile)
+    {
+        showPreviewTiles = false;
+    }
+    else
+    {
+        if (showPreviewTiles && previewTile == *inPreviewTile && previewFrom == inPreviewFrom && previewTo == inPreviewTo)
+        {
+            return;
+        }
+
+        showPreviewTiles = true;
+        previewTile = *inPreviewTile;
+        previewFrom = inPreviewFrom;
+        previewTo = inPreviewTo;
+    }
+    for (uint x = updatePreviewFrom.x == 0u ? 0u : updatePreviewFrom.x - 1u; x < updatePreviewTo.x + 1u; x++)
+    {
+        for (uint y = updatePreviewFrom.y == 0u ? 0u : updatePreviewFrom.y - 1u; y < updatePreviewTo.y + 1u; y++)
+        {
+            for (uint z = updatePreviewFrom.z == 0u ? 0u : updatePreviewFrom.z - 1u; z < updatePreviewTo.z + 1u; z++)
+            {
+                if (map->isValidPosition(x, y, z))
+                {
+                    getChunkForPosition(uvec3(x, y, z)).updateTile(x, y, z);
+                }
+            }
+        }
+    }
+    undirt();
+}
+
+void IsoTileMapMeshGenerator::undirt()
+{
+    for (auto &chunk : chunks)
+    {
+        if (chunk.dirtyMesh)
+        {
+            chunk.uploadMesh();
+        }
+    }
+}
+
 #define VERTS_PER_SMALLEST_VERT_BUFFER (IsoTileMap::CHUNK_WIDTH * IsoTileMap::CHUNK_WIDTH * 30 * 2)
 
-IsoTileMapMeshGenerator::Chunk::Chunk(IsoTileMap *map, const uvec3 &offset) : map(map), offset(offset)
+IsoTileMapMeshGenerator::Chunk::Chunk(IsoTileMapMeshGenerator *generator, IsoTileMap *map, const uvec3 &offset)
+    : generator(generator), map(map), offset(offset)
 {
     assert(offset.y == 0u);
     trisPerTile.resize(IsoTileMap::CHUNK_WIDTH * IsoTileMap::CHUNK_WIDTH * map->size.y);
@@ -132,10 +174,16 @@ void IsoTileMapMeshGenerator::Chunk::updateTile(uint x, uint y, uint z)
 
     uvec3 tilePosChunkRelative = uvec3(x, y, z) - offset;
     vec3 tilePos(x, y * IsoTileMap::TILE_HEIGHT, z);
-    auto &tile = map->getTile(x, y, z);
+    uvec3 tilePosU(x, y, z);
+
+    bool inPreviewArea = generator->showPreviewTiles && all(greaterThanEqual(tilePosU, generator->previewFrom)) && all(lessThanEqual(tilePosU, generator->previewTo));
+
+    auto &tile = inPreviewArea ? generator->previewTile : map->getTile(x, y, z);
     const IsoTileMaterial &material = IsoTileMap::getMaterial(tile.material);
     const aseprite::Sprite &tileset = material.tileset.get();
-    currentSpriteSheetOffset = Game::spriteSheet->spriteInfo(tileset).frameOffsets.at(mu::randomInt(tileset.frameCount));
+    currentSpriteSheetOffset = Game::spriteSheet->spriteInfo(tileset).frameOffsets.at(
+        mu::randomIntFromX(float(x + (y * map->size.x) + (z * map->size.x * map->size.y)), tileset.frameCount)
+    );
 
     auto &trisForThisTile = getTrisPerTile(x - offset.x, y - offset.y, z - offset.z);
 
