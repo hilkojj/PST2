@@ -135,4 +135,3 @@ const uint MegaSpriteSheet::getChunksPerRow() const
 {
     return size / CHUNK_SIZE;
 }
-

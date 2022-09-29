@@ -33,7 +33,7 @@ bool UIScreenWidgets::modelSpriteImageButton(const char *buttonID, const char *m
 
 bool UIScreenWidgets::modelSpriteImageButton(const char *buttonID, const SharedModelSprite &modelSprite, const ModelSprite::Orientation &orientation, bool inset, bool flipX, float scale)
 {
-    const uvec2 &spriteOffset = orientation.animations.at("default").at(0).spriteSheetOffset;
+    const uvec2 &spriteOffset = orientation.animations.at("Default").at(0).spriteSheetOffset;
     const ImVec2 imgSize(
         modelSprite->renderProperties.spriteSize.x * float(Game::settings.graphics.pixelsPerMeter) * scale,
         modelSprite->renderProperties.spriteSize.y * float(Game::settings.graphics.pixelsPerMeter) * scale
@@ -50,4 +50,31 @@ bool UIScreenWidgets::asepriteImageButton(const char *buttonID, const asset<asep
     const ImVec2 imgSize(float(sprite->width) * scale, float(sprite->height) * scale);
 
     return spriteImageButton(buttonID, spriteOffset, imgSize, inset, flipX);
+}
+
+bool UIScreenWidgets::beginSecondaryMenuBar()
+{
+    ImGuiContext& g = *GImGui;
+    g.NextWindowData.MenuBarOffsetMinVal = ImVec2(g.Style.DisplaySafeAreaPadding.x, ImMax(g.Style.DisplaySafeAreaPadding.y - g.Style.FramePadding.y, 0.0f));
+    ImGui::SetNextWindowPos(ImVec2(0.0f, g.NextWindowData.MenuBarOffsetMinVal.y + g.FontBaseSize + g.Style.FramePadding.y + 4.0f));
+    ImGui::SetNextWindowSize(ImVec2(g.IO.DisplaySize.x, float(Game::settings.graphics.pixelsPerMeter) + 17.0f));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2(0, 0));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(g.Style.FramePadding.x, 3.0f));
+    ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings;
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, IM_COL32(177, 230, 214, 255));
+    bool is_open = ImGui::Begin("##SecondaryMenuBar", NULL, window_flags);
+    ImGui::PopStyleVar(3);
+    if (!is_open)
+    {
+        ImGui::End();
+        return false;
+    }
+    return true;
+}
+
+void UIScreenWidgets::endSecondaryMenuBar()
+{
+    ImGui::End();
+    ImGui::PopStyleColor();
 }

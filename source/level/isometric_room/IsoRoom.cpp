@@ -2,6 +2,7 @@
 #include "IsoRoom.h"
 #include "IsoTileMap.h"
 #include "../../game/Game.h"
+#include "../../ecs/systems/graphics/iso/ModelSpriteSystem.h"
 
 #include <level/Level.h>
 
@@ -29,6 +30,7 @@ void IsoRoom::initialize(Level *lvl)
     assert(tileMap);
 
     // add systems
+    addSystem(new ModelSpriteSystem("Model sprites"));
 
     Room::initialize(lvl);
 }

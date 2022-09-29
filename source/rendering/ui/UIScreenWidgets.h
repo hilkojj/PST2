@@ -15,6 +15,9 @@ namespace UIScreenWidgets
 
     bool asepriteImageButton(const char *buttonID, const asset<aseprite::Sprite> &sprite, uint frame = 0u, bool inset = false, bool flipX = false, float scale = 1.0f);
 
+    bool beginSecondaryMenuBar();
+
+    void endSecondaryMenuBar();
 };
 
 

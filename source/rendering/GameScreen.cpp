@@ -86,6 +86,7 @@ void GameScreen::render(double deltaTime)
 
     if (ImGui::BeginMenu("Game"))
     {
+        ImGui::MenuItem("Fullscreen", KeyInput::getKeyName(dibidab::settings.keyInput.toggleFullscreen), &gu::fullscreen);
         if (ImGui::BeginMenu("Graphics"))
         {
             std::string spriteUsage =

@@ -9,7 +9,7 @@
 #include "UIScreen.h"
 #include "../../game/Game.h"
 #include "../../level/isometric_room/IsoRoom.h"
-#include "../../ecs/systems/graphics/SpriteSystem.h"
+#include "../../ecs/systems/graphics/AsepriteSystem.h"
 
 #define LVL_EXTENSION ".pst2"
 

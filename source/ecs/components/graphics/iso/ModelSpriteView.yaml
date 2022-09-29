@@ -1,6 +1,9 @@
 
-ModelSpriteView: # @dirtyable:
+ModelSpriteView:
   modelName: string
-  animation: [string, "default"]
+  animation: [string, "Default"]
   frame: [uint, 0u]
+  frameTimer: [ float, 0.0f ]
+  loop: [bool, true]
+  speedMultiplier: [float, 1.0f]
 

@@ -16,6 +16,8 @@ IsoRoomScreen::IsoRoomScreen(IsoRoom *room)
     entityInspector.createEntity_showSubFolder = "simulation";
 }
 
+static bool bShowTerrainEditor = true;
+
 void IsoRoomScreen::render(double deltaTime)
 {
     gu::profiler::Zone z("IsoRoom");
@@ -45,7 +47,10 @@ void IsoRoomScreen::render(double deltaTime)
     renderModelSprites();
 
     // update terrain mesh:
-    showTerrainEditor();
+    if (bShowTerrainEditor)
+    {
+        showTerrainEditor();
+    }
     tileMapMeshGenerator.update();
 
     tileHovered = findHoveredTile(hoveredTilePos, hoveredTileNormal);
@@ -75,6 +80,17 @@ void IsoRoomScreen::render(double deltaTime)
     }
 
     renderDebugStuff(deltaTime);
+
+    UIScreenWidgets::beginSecondaryMenuBar();
+    if (UIScreenWidgets::modelSpriteImageButton("showTerrainEditor", "TerrainEditorIcon"))
+    {
+        bShowTerrainEditor = true;
+    }
+    if (ImGui::IsItemHovered())
+    {
+        ImGui::SetTooltip("Terrain editor");
+    }
+    UIScreenWidgets::endSecondaryMenuBar();
 }
 
 void IsoRoomScreen::onResize()
@@ -137,7 +153,7 @@ void IsoRoomScreen::showTerrainEditor()
     static uint material = 0u;
 
     ImGui::SetNextWindowSize(ImVec2(280.0f, -1.0f), ImGuiCond_Appearing);
-    if (ImGui::Begin("Terrain Editor"))
+    if (ImGui::Begin("Terrain Editor", &bShowTerrainEditor))
     {
         ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(255, 0, 0, 100));
         ImGui::BeginChild("Shape", ImVec2(-1, 90), true, ImGuiWindowFlags_None);

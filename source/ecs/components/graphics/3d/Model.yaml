@@ -18,6 +18,9 @@ RenderModelToSpriteSheet:
   pitchMax: [float, 45.0f]
   spriteSize: [vec2, vec2(2.0f)]
 
+  animationNames: [std::vector<std::string>, '{"Default"}']
+  fps: [uint, 16]
+
   showGrid: [bool, false]
   gridSize: [uint, 10u]
   gridOffset: [vec3, vec3(0.0f)]

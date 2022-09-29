@@ -1,6 +1,6 @@
 
-#ifndef GAME_SPRITESYSTEM_H
-#define GAME_SPRITESYSTEM_H
+#ifndef GAME_ASEPRITESYSTEM_H
+#define GAME_ASEPRITESYSTEM_H
 
 #include <ecs/systems/EntitySystem.h>
 
@@ -9,7 +9,7 @@ struct AABB;
 /**
  * see SpriteAnchor documentation
  */
-class SpriteSystem : public EntitySystem
+class AsepriteSystem : public EntitySystem
 {
     using EntitySystem::EntitySystem;
 

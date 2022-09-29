@@ -24,4 +24,5 @@ function create(model)
         DirectionalLight()
     })
 
+    finishCurrentAnimation()
 end

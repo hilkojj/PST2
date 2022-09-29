@@ -1,16 +1,16 @@
 
-#include "SpriteSystem.h"
+#include "AsepriteSystem.h"
 #include <ecs/EntityEngine.h>
 #include "../../../generated/AsepriteView.hpp"
 
-void SpriteSystem::update(double deltaTime, EntityEngine *room)
+void AsepriteSystem::update(double deltaTime, EntityEngine *room)
 {
     this->room = room;
 
     updateAnimations(deltaTime);
 }
 
-void SpriteSystem::updateAnimations(double deltaTime)
+void AsepriteSystem::updateAnimations(double deltaTime)
 {
     room->entities.view<AsepriteView>().each([&](AsepriteView &view) {
 
